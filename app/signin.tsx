@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { Image, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Button, ButtonIcon, ButtonText } from '../components/ui/button';
@@ -39,8 +39,7 @@ const SignIn = () => {
   };
 
   const handleUsePhoneNumber = () => {
-    // Handle phone number sign in
-    console.log('Use phone number pressed');
+    router.push('/phone-register');
   };
 
   const handleTermsOfUse = () => {
