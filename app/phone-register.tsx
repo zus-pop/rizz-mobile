@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import VerificationCodeSection from '../components/code-verification';
-import PhoneInputSection from '../components/phone-input';
+import PhoneInputSection from '../components/ui/phone/phone-input';
+import VerificationCodeSection from '../components/ui/phone/code-verification';
 
 const PhoneRegister = () => {
   const [currentSection, setCurrentSection] = useState<'phone' | 'verification'>('phone');

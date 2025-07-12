@@ -1,7 +1,7 @@
+import { Text } from '@/components/ui/text';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
-import { Text } from './ui/text';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 interface VerificationCodeSectionProps {

@@ -2,6 +2,7 @@ import '../global.css';
 
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -15,12 +16,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView>
       <GluestackUIProvider mode="system">
-        <Stack>
-          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-        <Toaster swipeToDismissDirection="up" />
+        <BottomSheetModalProvider>
+          <Stack>
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="profile-details" options={{ headerShown: false }} />
+          </Stack>
+          <Toaster swipeToDismissDirection="up" />
+        </BottomSheetModalProvider>
       </GluestackUIProvider>
     </GestureHandlerRootView>
   );

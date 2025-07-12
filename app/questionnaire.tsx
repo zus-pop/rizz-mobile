@@ -10,7 +10,6 @@ import {
   LookingForScreen,
   PassionsScreen,
   StudyStyleScreen,
-  UploadImageScreen,
   WeekendHabitScreen,
 } from '../components/questionnaire';
 import AfterGraduationScreen from '../components/questionnaire/AfterGraduationScreen';

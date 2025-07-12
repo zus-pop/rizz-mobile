@@ -1,7 +1,3 @@
-// Main Questionnaire Component
-export { default as Questionnaire } from './Questionnaire';
-export type { QuestionnaireData } from './Questionnaire';
-
 // Individual Screen Components (content only)
 export { default as IAmScreen } from './IAmScreen';
 export { default as InterestedInScreen } from './InterestedInScreen';
@@ -17,9 +13,6 @@ export { default as DealBreakerScreen } from './DealBreakerScreen';
 // Special Screens (these might still need layout)
 export { default as FriendsScreen } from './FriendsScreen';
 export { default as NotificationScreen } from './NotificationScreen';
-export { default as UploadImageScreen } from './UploadImageScreen';
-export { default as VoiceAddingScreen } from './VoiceAddingScreen';
-export { default as RecordingScreen } from './RecordingScreen';
 
 // Reusable Components
 export { default as BackButton } from './BackButton';

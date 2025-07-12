@@ -1,11 +1,11 @@
+import { Divider } from '@/components/ui/divider';
+import { Heading } from '@/components/ui/heading';
+import { Text } from '@/components/ui/text';
 import { FontAwesome } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
 import PhoneInput from 'react-native-phone-input';
-import { Divider } from './ui/divider';
-import { Heading } from './ui/heading';
-import { Text } from './ui/text';
 import Animated from 'react-native-reanimated';
 
 interface PhoneInputSectionProps {

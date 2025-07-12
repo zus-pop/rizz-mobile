@@ -36,7 +36,7 @@ const SignIn = () => {
   const handleContinueWithEmail = () => {
     // Handle email sign in
     console.log('Continue with email pressed');
-    router.push('/questionnaire');
+    router.push('/profile-details');
   };
 
   const handleUsePhoneNumber = () => {
