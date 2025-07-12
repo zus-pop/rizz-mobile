@@ -13,7 +13,7 @@ export default function InterestChip({ text, isSelected, onPress, icon }: Intere
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`mx-8 h-14 flex-row items-center justify-start rounded-2xl  border px-4 shadow-sm shadow-primary-200 ${
+      className={`h-14 flex-row items-center justify-start rounded-2xl border px-4 shadow-sm shadow-primary-200 ${
         isSelected ? 'border-[#FA5EFF] bg-[#FA5EFF] shadow-lg' : 'border-primary-0 bg-white'
       }`}>
       {icon && (

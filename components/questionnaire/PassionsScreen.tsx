@@ -131,7 +131,7 @@ const interests = [
         ItemSeparatorComponent={() => <View className="h-2" />}
         numColumns={2}
         renderItem={({ item }) => (
-          <View className="max-w-[48%] flex-1">
+          <View className="flex-1">
             <InterestChip
               icon={item.icon}
               text={item.name}
