@@ -6,6 +6,7 @@ import PhoneInput from 'react-native-phone-input';
 import { Divider } from './ui/divider';
 import { Heading } from './ui/heading';
 import { Text } from './ui/text';
+import Animated from 'react-native-reanimated';
 
 interface PhoneInputSectionProps {
   onContinue: () => void;
@@ -78,7 +79,7 @@ export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps
   }, []);
 
   return (
-    <View className="flex-1 bg-white">
+    <Animated.View className="flex-1">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-start', paddingTop: '25%' }}
         keyboardShouldPersistTaps="handled"
@@ -97,50 +98,67 @@ export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps
 
           {/* Phone Input Container */}
           <View className="mb-16">
-            <View className="relative h-[58px] rounded-[15px] border-2 border-[#D1D5DB] bg-white">
+            <View className="relative h-[68px] rounded-[20px] border-2 border-[#E5E7EB] bg-white shadow-sm">
               <PhoneInput
                 ref={phoneRef}
                 initialCountry="vn"
                 onChangePhoneNumber={handlePhoneChange}
                 style={{
-                  height: 58,
+                  height: 68,
                   backgroundColor: 'transparent',
-                  paddingHorizontal: 15,
+                  paddingHorizontal: 20,
                 }}
                 textStyle={{
-                  fontSize: 14,
-                  color: isValidPhone ? '#000' : '#ef4444',
+                  fontSize: 18,
+                  color: isValidPhone ? '#1F2937' : '#EF4444',
                   fontFamily: 'Roboto',
+                  fontWeight: '500',
+                  minHeight: 44,
+                  paddingVertical: 12,
                 }}
                 textProps={{
-                  placeholder: 'Enter phone number',
+                  placeholder: 'Enter your phone number',
                   placeholderTextColor: '#9CA3AF',
                   onSubmitEditing: handleContinuePress,
                   returnKeyType: 'done',
+                  style: {
+                    fontSize: 18,
+                    minHeight: 44,
+                    paddingVertical: 12,
+                    paddingHorizontal: 8,
+                  },
                 }}
                 renderFlag={({ imageSource }) => {
                   return (
-                    <TouchableOpacity
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}
-                      onPress={() => setShowCountryPicker(true)}>
-                      <Image
-                        source={imageSource}
+                    <View className="flex-row items-center">
+                      <TouchableOpacity
                         style={{
-                          width: 28,
-                          height: 20,
-                          marginRight: 8,
-                          borderRadius: 2,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 8,
+                          paddingRight: 12,
                         }}
-                      />
-                      <FontAwesome name="chevron-down" size={12} color="#9CA3AF" />
-                      <Divider orientation="vertical" className="ml-2 h-5 w-[2px] bg-gray-300" />
-                    </TouchableOpacity>
+                        onPress={() => setShowCountryPicker(true)}>
+                        <Image
+                          source={imageSource}
+                          style={{
+                            width: 32,
+                            height: 24,
+                            marginRight: 12,
+                            borderRadius: 4,
+                            shadowColor: '#000',
+                            shadowOffset: { width: 0, height: 1 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 2,
+                          }}
+                        />
+                        <FontAwesome name="chevron-down" size={14} color="#6B7280" />
+                      </TouchableOpacity>
+                      <Divider orientation="vertical" className="h-6 w-[2px] bg-gray-300" />
+                    </View>
                   );
                 }}
-                offset={10}
+                offset={16}
                 autoFormat={true}
                 allowZeroAfterCountryCode={false}
               />
@@ -177,6 +195,58 @@ export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps
             withFlag
             withCallingCode
             withEmoji
+            countryCodes={['VN']}
+            theme={{
+              backgroundColor: '#FFFFFF',
+              onBackgroundTextColor: '#111827',
+              fontSize: 15,
+              fontFamily: 'System',
+              filterPlaceholderTextColor: '#6B7280',
+              activeOpacity: 0.6,
+              itemHeight: 60,
+              primaryColor: '#FA5EFF',
+              primaryColorVariant: '#F3E8FF',
+            }}
+            modalProps={{
+              animationType: 'slide',
+              statusBarTranslucent: true,
+              presentationStyle: 'pageSheet',
+            }}
+            flatListProps={
+              {
+                style: {
+                  backgroundColor: '#FFFFFF',
+                  borderTopLeftRadius: 24,
+                  borderTopRightRadius: 24,
+                  paddingHorizontal: 16,
+                  paddingTop: 8,
+                },
+                showsVerticalScrollIndicator: false,
+                contentContainerStyle: {
+                  paddingBottom: 40,
+                },
+              } as any
+            }
+            filterProps={{
+              style: {
+                height: 44,
+                width: '80%',
+                backgroundColor: '#F8FAFC',
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: '#E2E8F0',
+                paddingHorizontal: 16,
+                marginHorizontal: 4,
+                marginBottom: 16,
+                marginTop: 16,
+                fontSize: 15,
+                fontFamily: 'System',
+                color: '#111827',
+              },
+              placeholder: 'Search...',
+              placeholderTextColor: '#6B7280',
+              autoFocus: true,
+            }}
           />
 
           {/* Continue Button */}
@@ -196,6 +266,6 @@ export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 }

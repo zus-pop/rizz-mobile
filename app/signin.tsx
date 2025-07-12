@@ -30,12 +30,13 @@ const GoogleIcon = () => (
   </Svg>
 );
 
-const PhoneIcon = () => <FontAwesome name="phone" size={30} color={'pink'} />;
+const PhoneIcon = () => <FontAwesome name="phone" size={30} color={'#FA5EFF'} />;
 
 const SignIn = () => {
   const handleContinueWithEmail = () => {
     // Handle email sign in
     console.log('Continue with email pressed');
+    router.push('/questionnaire');
   };
 
   const handleUsePhoneNumber = () => {
@@ -71,7 +72,7 @@ const SignIn = () => {
 
         {/* Rizz Title */}
         <View className="mt-10">
-          <Text className="font-lobster-two text-center text-[64px] font-normal leading-[96px] text-[#FA5EFF]">
+          <Text className="text-center font-lobster-two text-[64px] font-normal leading-[96px] text-[#FA5EFF]">
             Rizz
           </Text>
         </View>

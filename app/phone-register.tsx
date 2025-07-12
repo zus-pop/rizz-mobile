@@ -18,7 +18,7 @@ const PhoneRegister = () => {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1">
+      <View className="flex-1 bg-white">
         {currentSection === 'phone' ? (
           <PhoneInputSection onContinue={handleContinue} />
         ) : (
