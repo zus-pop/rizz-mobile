@@ -1,8 +1,9 @@
-import { Stack, router } from 'expo-router';
+import { Stack } from 'expo-router';
 
-import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
-import { ScreenContent } from '~/components/ScreenContent';
+import { ScreenContent } from '@/components/ScreenContent';
+import { ScrollView, Text } from 'react-native';
 
 export default function Home() {
   return (
@@ -10,9 +11,28 @@ export default function Home() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         <ScreenContent path="app/(tabs)/index.tsx" title="Tab One" />
-
+        <ScrollView style={{ flex: 1, marginTop: 16 }}>
+          {Array.from({ length: 30 }).map((_, i) => (
+            <View
+              key={i}
+              style={{
+                padding: 16,
+                marginBottom: 12,
+                backgroundColor: '#f2f2f2',
+                borderRadius: 8,
+                alignItems: 'center',
+              }}>
+              <Text style={{ fontSize: 16, marginBottom: 8 }}>Image {i + 1}</Text>
+              <Image
+                source={{ uri: `https://picsum.photos/seed/${i}/200/120` }}
+                style={{ width: 200, height: 120, borderRadius: 8 }}
+                resizeMode="cover"
+              />
+            </View>
+          ))}
+        </ScrollView>
         {/* Test Navigation Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => router.push('/profile-details')}
           className="mx-10 mt-6 h-14 items-center justify-center rounded-[15px] bg-[#FA5EFF]"
           style={{
@@ -23,7 +43,7 @@ export default function Home() {
             elevation: 8,
           }}>
           <Text className="font-roboto text-base font-bold text-white">Go to Profile Details</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </>
   );
@@ -32,6 +52,5 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
   },
 });

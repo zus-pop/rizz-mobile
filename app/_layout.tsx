@@ -18,8 +18,8 @@ export default function RootLayout() {
       <GluestackUIProvider mode="system">
         <BottomSheetModalProvider>
           <Stack>
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="profile-details" options={{ headerShown: false }} />
           </Stack>
