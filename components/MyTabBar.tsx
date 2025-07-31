@@ -1,19 +1,16 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
-import TabBarButton from './TabBarButton';
 import { useMemo, useState } from 'react';
-import { Easing, LayoutChangeEvent } from 'react-native';
+import { LayoutChangeEvent } from 'react-native';
 import Animated, {
-  FadeInDown,
-  interpolate,
-  ReduceMotion,
-  SlideInDown,
-  useAnimatedProps,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
+    FadeInDown,
+    ReduceMotion,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring
 } from 'react-native-reanimated';
+import TabBarButton from './TabBarButton';
 
 export default function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { colors } = useTheme();
@@ -86,7 +83,6 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
             }}
           />
         </Animated.View>
-
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label =

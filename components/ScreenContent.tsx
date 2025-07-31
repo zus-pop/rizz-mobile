@@ -1,7 +1,6 @@
 import { Text, View } from 'react-native';
 
 import { EditScreenInfo } from './EditScreenInfo';
-import LiquidGlass from './LiquidGlass';
 
 type ScreenContentProps = {
   title: string;
@@ -12,7 +11,6 @@ type ScreenContentProps = {
 export const ScreenContent = ({ title, path, children }: ScreenContentProps) => {
   return (
     <View className={styles.container}>
-      <LiquidGlass width={300} height={150} />
       <Text className={styles.title}>{title}</Text>
       <View className={styles.separator} />
       <EditScreenInfo path={path} />
