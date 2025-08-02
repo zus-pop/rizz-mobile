@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -6,23 +6,23 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  Animated, // 1. Import Animated
+  Animated,
   FlatList,
+  Platform,
 } from 'react-native';
 
-// --- Import dữ liệu và type ---
+// --- Import dữ liệu và type (GIỮ NGUYÊN) ---
 import {
   MESSAGES_DATA,
   ACTIVITIES_DATA,
   MessageItemProps,
   ActivityItemProps,
-} from '../../assets/data/inbox/data'; // <-- Giữ nguyên đường dẫn của bạn
+} from '../../assets/data/inbox/data';
 
-// --- THAY ĐỔI: Import Header của bạn ---
-import Header from '~/components/ui/rizz/header/Header';
+// --- Import Header và hằng số (GIỮ NGUYÊN ĐƯỜNG DẪN) ---
+import Header, { HEADER_MAX_HEIGHT, ANIMATION_DURATION } from '~/components/ui/rizz/header/Header';
 
-// --- Các hằng số cho Animation ---
-const HEADER_MAX_HEIGHT = 160; // Giả sử chiều cao header của bạn là 160
+const TRIGGER_THRESHOLD = HEADER_MAX_HEIGHT / 2;
 
 // --- Các sub-component cho danh sách ---
 const formatRelativeTime = (isoString: string): string => {
@@ -38,9 +38,9 @@ const formatRelativeTime = (isoString: string): string => {
 };
 
 const ActivityItem = ({ item }: { item: ActivityItemProps }) => (
-  <TouchableOpacity style={styles.activityItem}>
-    <Image source={{ uri: item.avatar }} style={styles.activityAvatar} />
-    <Text style={styles.activityName}>{item.name}</Text>
+  <TouchableOpacity style={screenStyles.activityItem}>
+    <Image source={{ uri: item.avatar }} style={screenStyles.activityAvatar} />
+    <Text style={screenStyles.activityName}>{item.name}</Text>
   </TouchableOpacity>
 );
 
@@ -49,23 +49,23 @@ const MessageItem = ({ item }: { item: MessageItemProps }) => {
   const isTyping = item.status === 'typing';
 
   return (
-    <TouchableOpacity style={styles.messageRow}>
-      <Image source={{ uri: item.avatar }} style={styles.messageAvatar} />
-      <View style={styles.messageContent}>
-        <Text style={styles.messageSender}>{item.sender}</Text>
+    <TouchableOpacity style={screenStyles.messageRow}>
+      <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
+      <View style={screenStyles.messageContent}>
+        <Text style={screenStyles.messageSender}>{item.sender}</Text>
         <Text
           numberOfLines={1}
-          style={[styles.messagePreview, isTyping && styles.typingText]}>
+          style={[screenStyles.messagePreview, isTyping && screenStyles.typingText]}>
           {messagePreview}
         </Text>
       </View>
-      <View style={styles.messageInfo}>
-        <Text style={styles.messageTimestamp}>
+      <View style={screenStyles.messageInfo}>
+        <Text style={screenStyles.messageTimestamp}>
           {formatRelativeTime(item.timestamp)}
         </Text>
         {item.unreadCount > 0 && (
-          <View style={styles.unreadBadge}>
-            <Text style={styles.unreadCount}>{item.unreadCount}</Text>
+          <View style={screenStyles.unreadBadge}>
+            <Text style={screenStyles.unreadCount}>{item.unreadCount}</Text>
           </View>
         )}
       </View>
@@ -76,7 +76,9 @@ const MessageItem = ({ item }: { item: MessageItemProps }) => {
 // --- Component chính ---
 const MessagesScreen = () => {
   const [searchText, setSearchText] = useState('');
+  const animation = useRef(new Animated.Value(0)).current;
   const scrollY = useRef(new Animated.Value(0)).current;
+  const isHeaderCollapsed = useRef(false);
 
   const filteredMessages = MESSAGES_DATA.filter(
     item =>
@@ -84,38 +86,61 @@ const MessagesScreen = () => {
       item.lastMessage.toLowerCase().includes(searchText.toLowerCase()),
   );
 
-  const renderListContent = () => (
-      <>
-        <View style={styles.activitiesSection}>
-            <Text style={styles.sectionTitle}>Activities</Text>
-            <FlatList
-                data={ACTIVITIES_DATA}
-                renderItem={({ item }) => <ActivityItem item={item} />}
-                keyExtractor={item => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingLeft: 16, paddingRight: 8 }}
-            />
-        </View>
-        <Text style={[styles.sectionTitle, styles.messagesTitle]}>Messages</Text>
-      </>
+  const toggleHeader = (collapse: boolean) => {
+    if (isHeaderCollapsed.current === collapse) return;
+
+    isHeaderCollapsed.current = collapse;
+    Animated.timing(animation, {
+      toValue: collapse ? 1 : 0,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: false,
+    }).start();
+  };
+  
+  useEffect(() => {
+    const listenerId = scrollY.addListener(({ value }) => {
+      if (value > TRIGGER_THRESHOLD) {
+        toggleHeader(true); 
+      } else {
+        toggleHeader(false); 
+      }
+    });
+
+    return () => {
+      scrollY.removeListener(listenerId);
+    };
+  }, []);
+
+
+  const renderListHeader = () => (
+      <View style={screenStyles.activitiesSection}>
+          <Text style={screenStyles.sectionTitle}>Activities</Text>
+          <FlatList
+              data={ACTIVITIES_DATA}
+              renderItem={({ item }) => <ActivityItem item={item} />}
+              keyExtractor={item => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+          />
+      </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* THAY ĐỔI: Sử dụng Header của bạn và truyền vào scrollY */}
-      {/* Lưu ý: Component Header của bạn cần được thiết kế để nhận prop scrollY và xử lý animation */}
+    <SafeAreaView style={screenStyles.container}>
       <Header
-        scrollY={scrollY} 
+        animation={animation} 
+        title="Messages"
         searchText={searchText}
         onSearchTextChange={setSearchText}
         onFilterPress={() => alert('Filter button pressed!')}
+        onSearchIconPress={() => alert('Search icon pressed!')}
       />
       <Animated.FlatList
         data={filteredMessages}
         renderItem={({ item }) => <MessageItem item={item} />}
         keyExtractor={item => item.id}
-        ListHeaderComponent={renderListContent}
+        ListHeaderComponent={renderListHeader}
         contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -127,26 +152,23 @@ const MessagesScreen = () => {
   );
 };
 
-// --- StyleSheet ---
-const styles = StyleSheet.create({
+// --- StyleSheet cho màn hình ---
+const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFFFFF', // SỬA: Nền sáng
   },
-  // Các style cho header đã được xóa vì component Header đã được tách ra
-  // --- List Content Styles ---
   activitiesSection: {
-    paddingVertical: 10,
+    paddingTop: 20,
+    paddingBottom: 10,
+    backgroundColor: '#FFFFFF', // SỬA: Nền sáng
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     paddingHorizontal: 16,
     marginBottom: 15,
-  },
-  messagesTitle: {
-      marginTop: 10,
-      marginBottom: 10,
+    color: '#000000', // SỬA: Màu chữ tối
   },
   activityItem: {
     alignItems: 'center',
@@ -162,6 +184,7 @@ const styles = StyleSheet.create({
   activityName: {
     marginTop: 8,
     fontSize: 14,
+    color: '#000000', // SỬA: Màu chữ tối
   },
   messageRow: {
     flexDirection: 'row',
@@ -181,10 +204,11 @@ const styles = StyleSheet.create({
   messageSender: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#000000', // SỬA: Màu chữ tối
   },
   messagePreview: {
     fontSize: 14,
-    color: '#666',
+    color: '#666666', // SỬA: Màu chữ phụ
     marginTop: 4,
   },
   typingText: {
@@ -196,7 +220,7 @@ const styles = StyleSheet.create({
   },
   messageTimestamp: {
     fontSize: 12,
-    color: '#A0A0A0',
+    color: '#A0A0A0', // SỬA: Màu chữ phụ
   },
   unreadBadge: {
     backgroundColor: '#FF3B30',

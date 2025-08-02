@@ -1,178 +1,334 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
-  Animated, // 1. Import Animated API
+  Animated,
+  Platform,
+  Pressable,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from '@react-native-community/blur';
 
-// 2. Định nghĩa các hằng số cho animation
-const HEADER_MAX_HEIGHT = 160; // Chiều cao ban đầu của header
-const HEADER_MIN_HEIGHT = 60;  // Chiều cao khi cuộn (chiều cao của thanh điều hướng)
-const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
+// --- Các hằng số cho Animation ---
+export const HEADER_MAX_HEIGHT = 140; 
+export const HEADER_MIN_HEIGHT = 90; 
+export const ANIMATION_DURATION = 350;
 
-// Props giờ sẽ nhận vào một giá trị Animated
+// SỬA ĐỔI: Thêm interface cho props của GlassButton
+interface GlassButtonProps {
+  onPress: () => void;
+  children: React.ReactNode;
+}
+
+// SỬA ĐỔI: Component GlassButton mới
+const GlassButton: React.FC<GlassButtonProps> = ({ onPress, children }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  const pressIn = () => {
+    Animated.timing(animValue, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const pressOut = () => {
+    Animated.timing(animValue, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animatedStyle = {
+    transform: [
+      {
+        scale: animValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 0.95],
+        }),
+      },
+      {
+        rotateX: animValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', '15deg'],
+        }),
+      },
+    ],
+  };
+
+  return (
+    <Pressable onPressIn={pressIn} onPressOut={pressOut} onPress={onPress}>
+      <Animated.View style={[styles.glassButtonWrapper, animatedStyle]}>
+        <View style={styles.glassButtonBorder}>
+          <View style={styles.glassButtonInner}>
+            {children}
+          </View>
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
+
+// Props giờ sẽ nhận vào một giá trị Animated mới
 interface MessagesHeaderProps {
-  scrollY: Animated.Value;
+  animation: Animated.Value; 
+  title: string;
   searchText: string;
   onSearchTextChange: (text: string) => void;
   onFilterPress: () => void;
+  onSearchIconPress: () => void;
 }
 
 const Header: React.FC<MessagesHeaderProps> = ({
-  scrollY,
+  animation,
+  title,
   searchText,
   onSearchTextChange,
   onFilterPress,
+  onSearchIconPress,
 }) => {
-  // 3. Dùng interpolate để tính toán các style động dựa trên vị trí cuộn
-  const headerHeight = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
+  const headerHeight = animation.interpolate({
+    inputRange: [0, 1],
     outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
     extrapolate: 'clamp',
   });
 
-  // Opacity cho header lớn (sẽ mờ dần khi cuộn)
-  const largeHeaderOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2],
+  const largeHeaderOpacity = animation.interpolate({
+    inputRange: [0, 0.5],
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
-  // Opacity cho header nhỏ (sẽ hiện dần ra khi cuộn)
-  const smallHeaderOpacity = scrollY.interpolate({
-    inputRange: [HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
+  const smallHeaderOpacity = animation.interpolate({
+    inputRange: [0.4, 0.8],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
 
-  return (
-    <Animated.View style={[styles.container, { height: headerHeight }]}>
-      {/* Header thu nhỏ (hiện ra khi cuộn) */}
-      <Animated.View style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}>
-        <TouchableOpacity style={styles.smallHeaderButton}>
-           <Text style={styles.searchIcon}>🔍</Text>
-        </TouchableOpacity>
-        <Text style={styles.smallHeaderTitle}>Messages</Text>
-        <TouchableOpacity style={[styles.smallHeaderButton, styles.filterButtonSmall]} onPress={onFilterPress}>
-            <View style={styles.filterIconLine} />
-            <View style={styles.filterIconLine} />
-        </TouchableOpacity>
-      </Animated.View>
+  const sidePillsTranslateX = animation.interpolate({
+    inputRange: [0.6, 1],
+    outputRange: [0, 155], 
+    extrapolate: 'clamp',
+  });
 
-      {/* Header lớn (ẩn đi khi cuộn) */}
-      <Animated.View style={[styles.largeHeader, { opacity: largeHeaderOpacity }]}>
-        <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Messages</Text>
-            <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
-              <View style={styles.filterIconLine} />
-              <View style={styles.filterIconLine} />
-            </TouchableOpacity>
-        </View>
-        <View style={styles.searchSection}>
-            <View style={styles.searchContainer}>
-              <Text style={styles.searchIcon}>🔍</Text>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search"
-                placeholderTextColor="#A0A0A0"
-                value={searchText}
-                onChangeText={onSearchTextChange}
-              />
-            </View>
-        </View>
-      </Animated.View>
+  const sidePillsOpacity = animation.interpolate({
+    inputRange: [0.5, 0.7],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  
+  const bridgeScaleX = animation.interpolate({
+    inputRange: [0.6, 0.8],
+    outputRange: [1, 0], 
+    extrapolate: 'clamp',
+  });
+  
+  const smallDropletsOpacity = animation.interpolate({
+    inputRange: [0.78, 0.85, 1],
+    outputRange: [0, 1, 0], 
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <Animated.View style={[styles.headerContainer, { height: headerHeight }]}>
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="light" // SỬA: Chuyển sang "light" mode
+          blurAmount={10}
+        />
+      ) : (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.8)' }]} /> // SỬA: Nền sáng cho Android
+      )}
+      <View style={styles.contentContainer}>
+        {/* Header thu nhỏ (hiện ra khi cuộn) */}
+        <Animated.View style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}>
+          
+          <View style={styles.pillWrapper}>
+             <Text style={styles.smallHeaderTitle}>{title}</Text>
+          </View>
+
+          <Animated.View style={[
+            styles.sidePillContainer, 
+            { 
+              opacity: sidePillsOpacity, 
+              transform: [{ translateX: Animated.multiply(sidePillsTranslateX, -1) }] 
+            }
+          ]}>
+             <GlassButton onPress={onSearchIconPress}>
+                <Ionicons name="search" size={22} color="#333" />
+             </GlassButton>
+          </Animated.View>
+
+          <Animated.View style={[
+            styles.sidePillContainer, 
+            { 
+              opacity: sidePillsOpacity, 
+              transform: [{ translateX: sidePillsTranslateX }] 
+            }
+          ]}>
+             <GlassButton onPress={onFilterPress}>
+                <Ionicons name="ellipsis-horizontal" size={22} color="#333" />
+             </GlassButton>
+          </Animated.View>
+          
+          <Animated.View style={[styles.bridge, {right: '50%', marginRight: 60, transform: [{scaleX: bridgeScaleX}]}]} />
+          <Animated.View style={[styles.bridge, {left: '50%', marginLeft: 60, transform: [{scaleX: bridgeScaleX}]}]} />
+          
+          <Animated.View style={[styles.droplet, {right: '50%', marginRight: 40, opacity: smallDropletsOpacity}]} />
+          <Animated.View style={[styles.droplet, {left: '50%', marginLeft: 40, opacity: smallDropletsOpacity}]} />
+
+        </Animated.View>
+
+        {/* Header lớn (ẩn đi khi cuộn) */}
+        <Animated.View style={[styles.largeHeader, { opacity: largeHeaderOpacity }]}>
+          <View style={styles.headerRow}>
+              <Text style={styles.headerTitle}>{title}</Text>
+              <GlassButton onPress={onFilterPress}>
+                 <Ionicons name="ellipsis-horizontal" size={24} color="#333" />
+              </GlassButton>
+          </View>
+          <View style={styles.searchSection}>
+              <View style={styles.searchContainer}>
+                <Ionicons name="search" size={18} color="#8E8E93" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor="#8E8E93"
+                  value={searchText}
+                  onChangeText={onSearchTextChange}
+                />
+              </View>
+          </View>
+        </Animated.View>
+      </View>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  headerContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FFFFFF',
-    overflow: 'hidden',
-    borderBottomWidth: 1,
-    borderColor: '#EFEFEF',
     zIndex: 1000,
+  },
+  contentContainer: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 44 : 10,
+    justifyContent: 'flex-end',
   },
   // --- Small Header Styles ---
   smallHeader: {
-    flex: 1,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  smallHeaderTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  smallHeaderButton: {
-    width: 44,
-    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  filterButtonSmall: {
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  pillWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, 
+  },
+  sidePillContainer: {
+    position: 'absolute',
+    zIndex: 10, 
+  },
+  smallHeaderTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    backgroundColor: 'transparent',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    color: '#000000', // SỬA: Màu chữ tối
+  },
+  bridge: {
+    position: 'absolute',
+    height: 30,
+    width: 50,
+    top: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)', // SỬA: Màu sáng mờ
+    borderRadius: 15,
+    zIndex: 1, 
+  },
+  droplet: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // SỬA: Màu sáng mờ
+    zIndex: 1,
   },
   // --- Large Header Styles ---
   largeHeader: {
-    paddingTop: 20,
+    // Không cần thay đổi
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginBottom: 10,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: 'bold',
-  },
-  filterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterIconLine: {
-    width: 18,
-    height: 2,
-    backgroundColor: '#333',
-    marginVertical: 2.5,
+    color: '#000000', // SỬA: Màu chữ tối
   },
   searchSection: {
     paddingHorizontal: 16,
-    marginTop: 10,
+    paddingBottom: 10,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F7F7F7',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    height: 48,
+    backgroundColor: 'rgba(118, 118, 128, 0.12)', // SỬA: Màu nền search bar kiểu iOS Light
+    borderRadius: 10,
+    height: 36,
+    paddingHorizontal: 8,
   },
   searchIcon: {
-    fontSize: 18,
-    marginRight: 10,
+    marginRight: 6,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#000',
+    fontSize: 17,
+    color: '#000000', // SỬA: Màu chữ tối
+  },
+  // SỬA ĐỔI: Styles cho GlassButton (Light Mode)
+  glassButtonWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  glassButtonBorder: {
+    flex: 1,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(60, 60, 67, 0.2)', // SỬA: Viền xám tối trên nền sáng
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  glassButtonInner: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // SỬA: Nền trong mờ sáng
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
