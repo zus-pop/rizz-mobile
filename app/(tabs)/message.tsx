@@ -7,9 +7,13 @@ import {
   Image,
   TouchableOpacity,
   Animated,
-  FlatList,
+  // FlatList không còn cần thiết
   Platform,
+  NativeScrollEvent, // Import NativeScrollEvent để dùng cho onScroll
 } from 'react-native';
+
+// --- THAY ĐỔI 1: Import LegendList ---
+import { LegendList } from '@legendapp/list';
 
 // --- Import dữ liệu và type (GIỮ NGUYÊN) ---
 import {
@@ -24,17 +28,17 @@ import Header, { HEADER_MAX_HEIGHT, ANIMATION_DURATION } from '~/components/ui/r
 
 const TRIGGER_THRESHOLD = HEADER_MAX_HEIGHT / 2;
 
-// --- Các sub-component cho danh sách ---
+// --- Các sub-component cho danh sách (Không thay đổi) ---
 const formatRelativeTime = (isoString: string): string => {
   const now = new Date();
   const date = new Date(isoString);
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return `${diffInSeconds} sec`;
+  if (diffInSeconds < 60) return `${diffInSeconds} giây`;
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} min`;
+  if (diffInMinutes < 60) return `${diffInMinutes} phút`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  return `${diffInHours} hour`;
+  return `${diffInHours} giờ`;
 };
 
 const ActivityItem = ({ item }: { item: ActivityItemProps }) => (
@@ -45,7 +49,7 @@ const ActivityItem = ({ item }: { item: ActivityItemProps }) => (
 );
 
 const MessageItem = ({ item }: { item: MessageItemProps }) => {
-  const messagePreview = item.lastMessageFromYou ? `You: ${item.lastMessage}` : item.lastMessage;
+  const messagePreview = item.lastMessageFromYou ? `Bạn: ${item.lastMessage}` : item.lastMessage;
   const isTyping = item.status === 'typing';
 
   return (
@@ -79,7 +83,9 @@ const MessagesScreen = () => {
   const animation = useRef(new Animated.Value(0)).current;
   const scrollY = useRef(new Animated.Value(0)).current;
   const isHeaderCollapsed = useRef(false);
-  const flatListRef = useRef<FlatList<any>>(null);
+
+  // --- THAY ĐỔI 2: Cập nhật kiểu cho ref ---
+  const flatListRef = useRef<React.ElementRef<typeof LegendList>>(null);
 
   const filteredMessages = MESSAGES_DATA.filter(
     item =>
@@ -98,6 +104,7 @@ const MessagesScreen = () => {
     }).start();
   };
   
+  // Hàm scrollToTop vẫn hoạt động bình thường
   const scrollToTop = () => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
@@ -120,7 +127,8 @@ const MessagesScreen = () => {
   const renderListHeader = () => (
       <View style={screenStyles.activitiesSection}>
           <Text style={screenStyles.sectionTitle}>Activities</Text>
-          <FlatList
+          {/* --- THAY ĐỔI 3: Dùng LegendList cho danh sách ngang --- */}
+          <LegendList<ActivityItemProps>
               data={ACTIVITIES_DATA}
               renderItem={({ item }) => <ActivityItem item={item} />}
               keyExtractor={item => item.id}
@@ -141,24 +149,24 @@ const MessagesScreen = () => {
         onFilterPress={() => alert('Filter button pressed!')}
         onTitlePress={scrollToTop}
       />
-      <Animated.FlatList
+      {/* --- THAY ĐỔI 4: Dùng LegendList cho danh sách chính và cập nhật props --- */}
+      <LegendList<MessageItemProps>
         ref={flatListRef}
         data={filteredMessages}
         renderItem={({ item }) => <MessageItem item={item} />}
         keyExtractor={item => item.id}
         ListHeaderComponent={renderListHeader}
         contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
+        onScroll={({ nativeEvent }: { nativeEvent: NativeScrollEvent }) => {
+            scrollY.setValue(nativeEvent.contentOffset.y);
+        }}
+        // scrollEventThrottle đã được xóa
       />
     </SafeAreaView>
   );
 };
 
-// --- StyleSheet cho màn hình ---
+// --- StyleSheet cho màn hình (Không thay đổi) ---
 const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
