@@ -79,6 +79,7 @@ const MessagesScreen = () => {
   const animation = useRef(new Animated.Value(0)).current;
   const scrollY = useRef(new Animated.Value(0)).current;
   const isHeaderCollapsed = useRef(false);
+  const flatListRef = useRef<FlatList<any>>(null);
 
   const filteredMessages = MESSAGES_DATA.filter(
     item =>
@@ -97,6 +98,10 @@ const MessagesScreen = () => {
     }).start();
   };
   
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
   useEffect(() => {
     const listenerId = scrollY.addListener(({ value }) => {
       if (value > TRIGGER_THRESHOLD) {
@@ -134,9 +139,10 @@ const MessagesScreen = () => {
         searchText={searchText}
         onSearchTextChange={setSearchText}
         onFilterPress={() => alert('Filter button pressed!')}
-        onSearchIconPress={() => alert('Search icon pressed!')}
+        onTitlePress={scrollToTop}
       />
       <Animated.FlatList
+        ref={flatListRef}
         data={filteredMessages}
         renderItem={({ item }) => <MessageItem item={item} />}
         keyExtractor={item => item.id}
@@ -156,19 +162,19 @@ const MessagesScreen = () => {
 const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // SỬA: Nền sáng
+    backgroundColor: '#FFFFFF',
   },
   activitiesSection: {
     paddingTop: 20,
     paddingBottom: 10,
-    backgroundColor: '#FFFFFF', // SỬA: Nền sáng
+    backgroundColor: '#FFFFFF',
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     paddingHorizontal: 16,
     marginBottom: 15,
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
   activityItem: {
     alignItems: 'center',
@@ -184,7 +190,7 @@ const screenStyles = StyleSheet.create({
   activityName: {
     marginTop: 8,
     fontSize: 14,
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
   messageRow: {
     flexDirection: 'row',
@@ -204,12 +210,11 @@ const screenStyles = StyleSheet.create({
   messageSender: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
   messagePreview: {
     fontSize: 14,
-    color: '#666666', // SỬA: Màu chữ phụ
-    marginTop: 4,
+    color: '#666666',
   },
   typingText: {
     color: '#DDA0DD',
@@ -220,7 +225,7 @@ const screenStyles = StyleSheet.create({
   },
   messageTimestamp: {
     fontSize: 12,
-    color: '#A0A0A0', // SỬA: Màu chữ phụ
+    color: '#A0A0A0',
   },
   unreadBadge: {
     backgroundColor: '#FF3B30',

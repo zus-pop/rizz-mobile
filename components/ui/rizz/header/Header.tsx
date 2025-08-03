@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   Animated,
   Platform,
   Pressable,
+  TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from '@react-native-community/blur';
@@ -80,7 +82,7 @@ interface MessagesHeaderProps {
   searchText: string;
   onSearchTextChange: (text: string) => void;
   onFilterPress: () => void;
-  onSearchIconPress: () => void;
+  onTitlePress: () => void; 
 }
 
 const Header: React.FC<MessagesHeaderProps> = ({
@@ -89,8 +91,40 @@ const Header: React.FC<MessagesHeaderProps> = ({
   searchText,
   onSearchTextChange,
   onFilterPress,
-  onSearchIconPress,
+  onTitlePress,
 }) => {
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const searchAnimation = useRef(new Animated.Value(0)).current;
+  const searchInputRef = useRef<TextInput>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSearch = (active: boolean) => {
+    setIsSearchActive(active);
+    Animated.timing(searchAnimation, {
+      toValue: active ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start(() => {
+        if (active) {
+            searchInputRef.current?.focus();
+        }
+    });
+  };
+
+  useEffect(() => {
+    const listenerId = animation.addListener(({ value }) => {
+      setIsCollapsed(value > 0.5);
+      if (value < 0.1 && isSearchActive) {
+        toggleSearch(false);
+      }
+    });
+
+    return () => {
+      animation.removeListener(listenerId);
+    };
+  }, [animation, isSearchActive]);
+
+
   const headerHeight = animation.interpolate({
     inputRange: [0, 1],
     outputRange: [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
@@ -109,28 +143,28 @@ const Header: React.FC<MessagesHeaderProps> = ({
     extrapolate: 'clamp',
   });
 
-  const sidePillsTranslateX = animation.interpolate({
-    inputRange: [0.6, 1],
-    outputRange: [0, 155], 
+  const pillsOpacity = searchAnimation.interpolate({
+    inputRange: [0, 0.5],
+    outputRange: [1, 0],
     extrapolate: 'clamp',
   });
-
-  const sidePillsOpacity = animation.interpolate({
-    inputRange: [0.5, 0.7],
+  
+  const smallSearchWidth = searchAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [44, Dimensions.get('window').width - 32 - 80],
+    extrapolate: 'clamp',
+  });
+  
+  const smallSearchOpacity = searchAnimation.interpolate({
+    inputRange: [0, 0.5],
     outputRange: [0, 1],
     extrapolate: 'clamp',
   });
-  
-  const bridgeScaleX = animation.interpolate({
-    inputRange: [0.6, 0.8],
-    outputRange: [1, 0], 
-    extrapolate: 'clamp',
-  });
-  
-  const smallDropletsOpacity = animation.interpolate({
-    inputRange: [0.78, 0.85, 1],
-    outputRange: [0, 1, 0], 
-    extrapolate: 'clamp',
+
+  const cancelOpacity = searchAnimation.interpolate({
+      inputRange: [0.5, 1],
+      outputRange: [0, 1],
+      extrapolate: 'clamp',
   });
 
   return (
@@ -138,54 +172,55 @@ const Header: React.FC<MessagesHeaderProps> = ({
       {Platform.OS === 'ios' ? (
         <BlurView
           style={StyleSheet.absoluteFill}
-          blurType="light" // SỬA: Chuyển sang "light" mode
+          blurType="light"
           blurAmount={10}
         />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.8)' }]} /> // SỬA: Nền sáng cho Android
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.8)' }]} />
       )}
       <View style={styles.contentContainer}>
         {/* Header thu nhỏ (hiện ra khi cuộn) */}
-        <Animated.View style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}>
+        <Animated.View 
+            style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}
+            pointerEvents={isCollapsed ? 'auto' : 'none'}
+        >
           
-          <View style={styles.pillWrapper}>
-             <Text style={styles.smallHeaderTitle}>{title}</Text>
-          </View>
-
-          <Animated.View style={[
-            styles.sidePillContainer, 
-            { 
-              opacity: sidePillsOpacity, 
-              transform: [{ translateX: Animated.multiply(sidePillsTranslateX, -1) }] 
-            }
-          ]}>
-             <GlassButton onPress={onSearchIconPress}>
+          <Animated.View style={[styles.pillsContainer, { opacity: pillsOpacity, pointerEvents: isSearchActive ? 'none' : 'auto' }]}>
+            <GlassButton onPress={() => toggleSearch(true)}>
                 <Ionicons name="search" size={22} color="#333" />
-             </GlassButton>
+            </GlassButton>
+            <TouchableOpacity onPress={onTitlePress}>
+                <Text style={styles.smallHeaderTitle}>{title}</Text>
+            </TouchableOpacity>
+            <GlassButton onPress={onFilterPress}>
+                <Ionicons name="ellipsis-horizontal" size={22} color="#333" />
+            </GlassButton>
           </Animated.View>
 
-          <Animated.View style={[
-            styles.sidePillContainer, 
-            { 
-              opacity: sidePillsOpacity, 
-              transform: [{ translateX: sidePillsTranslateX }] 
-            }
-          ]}>
-             <GlassButton onPress={onFilterPress}>
-                <Ionicons name="ellipsis-horizontal" size={22} color="#333" />
-             </GlassButton>
+          <Animated.View style={[styles.smallSearchWrapper, { opacity: smallSearchOpacity, pointerEvents: isSearchActive ? 'auto' : 'none' }]}>
+            <Animated.View style={[styles.searchContainer, { width: smallSearchWidth }]}>
+                <Ionicons name="search" size={18} color="#8E8E93" style={styles.searchIcon} />
+                <TextInput
+                  ref={searchInputRef}
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor="#8E8E93"
+                />
+            </Animated.View>
+            <Animated.View style={{ opacity: cancelOpacity }}>
+              <TouchableOpacity onPress={() => toggleSearch(false)}>
+                <Text style={styles.cancelButton}>Cancel</Text>
+              </TouchableOpacity>
+            </Animated.View>
           </Animated.View>
-          
-          <Animated.View style={[styles.bridge, {right: '50%', marginRight: 60, transform: [{scaleX: bridgeScaleX}]}]} />
-          <Animated.View style={[styles.bridge, {left: '50%', marginLeft: 60, transform: [{scaleX: bridgeScaleX}]}]} />
-          
-          <Animated.View style={[styles.droplet, {right: '50%', marginRight: 40, opacity: smallDropletsOpacity}]} />
-          <Animated.View style={[styles.droplet, {left: '50%', marginLeft: 40, opacity: smallDropletsOpacity}]} />
 
         </Animated.View>
 
         {/* Header lớn (ẩn đi khi cuộn) */}
-        <Animated.View style={[styles.largeHeader, { opacity: largeHeaderOpacity }]}>
+        <Animated.View 
+            style={[styles.largeHeader, { opacity: largeHeaderOpacity }]}
+            pointerEvents={isCollapsed ? 'none' : 'auto'}
+        >
           <View style={styles.headerRow}>
               <Text style={styles.headerTitle}>{title}</Text>
               <GlassButton onPress={onFilterPress}>
@@ -230,47 +265,48 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 50,
+    paddingHorizontal: 16,
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  pillWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10, 
-  },
-  sidePillContainer: {
+  pillsContainer: {
     position: 'absolute',
-    zIndex: 10, 
+    left: 16,
+    right: 16,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   smallHeaderTitle: {
     fontSize: 17,
     fontWeight: '600',
-    backgroundColor: 'transparent',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
-  bridge: {
+  smallSearchWrapper: {
     position: 'absolute',
-    height: 30,
-    width: 50,
-    top: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)', // SỬA: Màu sáng mờ
-    borderRadius: 15,
-    zIndex: 1, 
+    left: 16,
+    right: 16,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  droplet: {
-    position: 'absolute',
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // SỬA: Màu sáng mờ
-    zIndex: 1,
+  cancelButton: {
+    color: '#007AFF',
+    fontSize: 17,
+    marginLeft: 10,
   },
   // --- Large Header Styles ---
   largeHeader: {
-    // Không cần thay đổi
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingBottom: 10,
   },
   headerRow: {
     flexDirection: 'row',
@@ -282,19 +318,19 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
   searchSection: {
     paddingHorizontal: 16,
-    paddingBottom: 10,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(118, 118, 128, 0.12)', // SỬA: Màu nền search bar kiểu iOS Light
+    backgroundColor: 'rgba(118, 118, 128, 0.12)',
     borderRadius: 10,
     height: 36,
     paddingHorizontal: 8,
+    flex: 1,
   },
   searchIcon: {
     marginRight: 6,
@@ -302,9 +338,9 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 17,
-    color: '#000000', // SỬA: Màu chữ tối
+    color: '#000000',
   },
-  // SỬA ĐỔI: Styles cho GlassButton (Light Mode)
+  // Styles cho GlassButton
   glassButtonWrapper: {
     width: 44,
     height: 44,
@@ -318,14 +354,14 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 22,
     borderWidth: 1.5,
-    borderColor: 'rgba(60, 60, 67, 0.2)', // SỬA: Viền xám tối trên nền sáng
+    borderColor: 'rgba(60, 60, 67, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   glassButtonInner: {
     flex: 1,
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // SỬA: Nền trong mờ sáng
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 21,
     justifyContent: 'center',
     alignItems: 'center',
