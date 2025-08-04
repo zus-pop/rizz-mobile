@@ -1,7 +1,6 @@
-import { ImageSourcePropType } from "react-native";
-
 export interface Profile {
-    firstName: string;
-    lastName: string;
-    images: ImageSourcePropType[];
+  firstName: string;
+  lastName: string;
+  age: number;
+  images: string[];
 }

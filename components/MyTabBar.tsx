@@ -4,11 +4,11 @@ import { BlurView } from 'expo-blur';
 import { useMemo, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, {
-    FadeInDown,
-    ReduceMotion,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring
+  FadeInDown,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
 import TabBarButton from './TabBarButton';
 
@@ -48,6 +48,7 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
   return (
     <Animated.View
       entering={bottomTabAnimation}
+      className={'shadow-md shadow-black/50'}
       style={{
         position: 'absolute',
         bottom: 30,
@@ -62,8 +63,8 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
           backgroundColor: 'rgba(255,255,255,0.5)',
         }}
         experimentalBlurMethod="dimezisBlurView"
-        tint="systemMaterial"
         blurReductionFactor={88}
+        tint="light"
         intensity={100}>
         <Animated.View
           style={[

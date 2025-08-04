@@ -11,20 +11,25 @@ export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView>
       <GluestackUIProvider mode="system">
-        <BottomSheetModalProvider>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="profile-details" options={{ headerShown: false }} />
-          </Stack>
-          <Toaster swipeToDismissDirection="up" />
-        </BottomSheetModalProvider>
+        <QueryClientProvider client={queryClient}>
+          <BottomSheetModalProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="profile-details" options={{ headerShown: false }} />
+            </Stack>
+            <Toaster swipeToDismissDirection="up" />
+          </BottomSheetModalProvider>
+        </QueryClientProvider>
       </GluestackUIProvider>
     </GestureHandlerRootView>
   );
