@@ -24,7 +24,6 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
               <Stack.Screen name="profile-details" options={{ headerShown: false }} />
             </Stack>
             <Toaster swipeToDismissDirection="up" />

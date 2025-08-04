@@ -1,7 +1,7 @@
 import { WINDOW } from '@/constants/sizes';
 import { Profile } from '@/types/profile';
 import { FontAwesome } from '@expo/vector-icons';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -21,12 +21,12 @@ import { snapPoint } from 'react-native-redash';
 const { width, height } = WINDOW;
 const CARD_WIDTH = width * 0.7;
 const CARD_HEIGHT = height * 0.55;
-const side = (width + CARD_WIDTH + 80) / 2;
+const SIDE = (width + CARD_WIDTH + 80) / 2;
 const ASPECT_RATIO = 722 / 368;
 const IMAGE_WIDTH = CARD_WIDTH * 0.9;
 const DURATION = 100;
-const LEFT_SWIPE_THRESH_HOLD = -side;
-const RIGHT_SWIPE_THRESH_HOLD = side;
+const LEFT_SWIPE_THRESH_HOLD = -SIDE;
+const RIGHT_SWIPE_THRESH_HOLD = SIDE;
 const SNAP_POINTS = [LEFT_SWIPE_THRESH_HOLD, 0, RIGHT_SWIPE_THRESH_HOLD];
 
 interface RizzCardProps {
@@ -54,9 +54,10 @@ const RizzCard = ({
   onSwipeRight,
   onUndoSwipe,
 }: RizzCardProps) => {
-  const perspective = 888;
-  const damping = 30;
-  const theta = Math.random() * 20 - 10;
+  const perspective = useMemo(() => 888, []);
+  const damping = useMemo(() => 30, []);
+  const theta = useMemo(() => Math.random() * 20 - 10, []);
+
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(-height - 300);
   const prevX = useSharedValue(0);
@@ -64,12 +65,12 @@ const RizzCard = ({
   const rotateX = useSharedValue(30);
   const rotateZ = useSharedValue(0);
   const scale = useSharedValue(1);
+  const isCardShowing = useSharedValue<boolean>(false);
   const opacity = useDerivedValue(() =>
     index >= currentIndex.value && index < currentIndex.value + maxVisible
       ? withTiming(1, { easing: Easing.inOut(Easing.ease) })
       : withTiming(0, { easing: Easing.inOut(Easing.ease) })
   );
-  const isCardShowing = useSharedValue<boolean>(false);
 
   useEffect(() => {
     const delay = 1000 + index * DURATION;
@@ -136,7 +137,6 @@ const RizzCard = ({
           }
           break;
         case 'undo':
-          //   console.log(`Current index: ${currentIndex.value} || Card index: ${index}`);
           if (currentIndex.value === index && isCardShowing.value) {
             scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
             rotateZ.value = withTiming(Math.random() * 20 - 10, {
@@ -152,6 +152,7 @@ const RizzCard = ({
               easing: Easing.inOut(Easing.ease),
             });
             rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+            if (isCardShowing) isCardShowing.value = false;
             runOnJS(onUndoSwipe)();
           }
           if (index === length - 1) swipeDirection.value = 'idle';
@@ -194,6 +195,7 @@ const RizzCard = ({
         scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
         rotateZ.value = withTiming(Math.random() * 20 - 10, { easing: Easing.inOut(Easing.ease) });
         //   rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+        if (isCardShowing) isCardShowing.value = false;
 
         if (dest === LEFT_SWIPE_THRESH_HOLD) {
           runOnJS(onSwipeLeft)();

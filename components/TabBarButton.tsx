@@ -27,7 +27,7 @@ const TabBarButton = ({
 }: TabBarButtonProps) => {
   const iconSize = useMemo(() => 30, []);
   const icons: Record<string, (props: any) => JSX.Element> = {
-    index: (props: any) => <Feather name="home" size={iconSize} {...props} />,
+    discover: (props: any) => <Feather name="home" size={iconSize} {...props} />,
     liked: (props: any) => <Feather name="heart" size={iconSize} {...props} />,
   };
 
@@ -54,6 +54,7 @@ const TabBarButton = ({
   useEffect(() => {
     scale.value = withSpring(isFocused ? 1 : 0, { duration: 333 });
   }, [isFocused, scale]);
+
   return (
     <Pressable
       className="flex-1 items-center justify-center"

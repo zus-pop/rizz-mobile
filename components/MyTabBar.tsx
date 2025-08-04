@@ -96,7 +96,7 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
           const isFocused = state.index === index;
 
           const onPress = () => {
-            tabBarPositionX.value = withSpring(buttonWidth * index, { duration: 2500 });
+            tabBarPositionX.value = withSpring(buttonWidth * index, { duration: 3000 });
 
             const event = navigation.emit({
               type: 'tabPress',

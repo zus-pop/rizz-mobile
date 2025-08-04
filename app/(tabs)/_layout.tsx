@@ -1,8 +1,8 @@
-import { Link, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 
-import { HeaderButton } from '@/components/HeaderButton';
 import MyTabBar from '@/components/MyTabBar';
-import { TabBarIcon } from '@/components/TabBarIcon';
+import { Text, View } from 'react-native';
+import DiscoverHeader from '../../components/discover/DiscoverHeader';
 
 export default function TabLayout() {
   return (
@@ -11,31 +11,27 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: 'pink',
         tabBarShowLabel: false,
-        tabBarStyle: {
-          position: 'absolute',
-          height: 200,
-          backgroundColor: 'transparent',
-          elevation: 0,
-          shadowOpacity: 0,
-        },
+        animation: 'fade',
+        // tabBarStyle: {
+        //   position: 'absolute',
+        //   height: 200,
+        //   backgroundColor: 'transparent',
+        //   elevation: 0,
+        //   shadowOpacity: 0,
+        // },
       }}>
       <Tabs.Screen
-        name="index"
+        name="discover"
         options={{
           title: 'Discover',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <HeaderButton />
-            </Link>
-          ),
+          headerTitle: () => <DiscoverHeader />,
+          headerTransparent: true,
         }}
       />
       <Tabs.Screen
         name="liked"
         options={{
           title: 'Liked',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
     </Tabs>
