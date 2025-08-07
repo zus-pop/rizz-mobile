@@ -7,9 +7,8 @@ import {
   Image,
   TouchableOpacity,
   Animated,
-  // FlatList không còn cần thiết
   Platform,
-  NativeScrollEvent, // Import NativeScrollEvent để dùng cho onScroll
+  NativeScrollEvent,
 } from 'react-native';
 
 // --- THAY ĐỔI 1: Import LegendList ---
@@ -28,7 +27,7 @@ import Header, { HEADER_MAX_HEIGHT, ANIMATION_DURATION } from '~/components/ui/r
 
 const TRIGGER_THRESHOLD = HEADER_MAX_HEIGHT / 2;
 
-// --- Các sub-component cho danh sách (Không thay đổi) ---
+// --- Các sub-component cho danh sách ---
 const formatRelativeTime = (isoString: string): string => {
   const now = new Date();
   const date = new Date(isoString);
@@ -41,39 +40,118 @@ const formatRelativeTime = (isoString: string): string => {
   return `${diffInHours} giờ`;
 };
 
-const ActivityItem = ({ item }: { item: ActivityItemProps }) => (
-  <TouchableOpacity style={screenStyles.activityItem}>
-    <Image source={{ uri: item.avatar }} style={screenStyles.activityAvatar} />
-    <Text style={screenStyles.activityName}>{item.name}</Text>
-  </TouchableOpacity>
-);
+const ActivityItem = ({ item }: { item: ActivityItemProps }) => {
+  const animatedScale = useRef(new Animated.Value(1)).current;
 
-const MessageItem = ({ item }: { item: MessageItemProps }) => {
-  const messagePreview = item.lastMessageFromYou ? `Bạn: ${item.lastMessage}` : item.lastMessage;
-  const isTyping = item.status === 'typing';
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(animatedScale, {
+        toValue: 0.92,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animatedScale, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
   return (
-    <TouchableOpacity style={screenStyles.messageRow}>
-      <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
-      <View style={screenStyles.messageContent}>
-        <Text style={screenStyles.messageSender}>{item.sender}</Text>
-        <Text
-          numberOfLines={1}
-          style={[screenStyles.messagePreview, isTyping && screenStyles.typingText]}>
-          {messagePreview}
-        </Text>
-      </View>
-      <View style={screenStyles.messageInfo}>
-        <Text style={screenStyles.messageTimestamp}>
-          {formatRelativeTime(item.timestamp)}
-        </Text>
-        {item.unreadCount > 0 && (
-          <View style={screenStyles.unreadBadge}>
-            <Text style={screenStyles.unreadCount}>{item.unreadCount}</Text>
+    <TouchableOpacity onPress={handlePress} activeOpacity={1}>
+      <Animated.View style={[screenStyles.activityItem, { transform: [{ scale: animatedScale }] }]}>
+        <View style={screenStyles.activityAvatarWrapper}>
+          <View style={screenStyles.activityGradientBorder}>
+            <Image source={{ uri: item.avatar }} style={screenStyles.activityAvatar} />
           </View>
-        )}
-      </View>
+          <View style={screenStyles.activityOnline} />
+        </View>
+        <Text style={screenStyles.activityName} numberOfLines={1}>{item.name}</Text>
+      </Animated.View>
     </TouchableOpacity>
+  );
+};
+
+const MessageItem = ({ item, index }: { item: MessageItemProps; index: number }) => {
+  const messagePreview = item.lastMessageFromYou ? `Bạn: ${item.lastMessage}` : item.lastMessage;
+  const isTyping = item.status === 'typing';
+  const isOnline = (item as any).isOnline || item.status === 'typing';
+  
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View 
+      style={[
+        screenStyles.messageContainer,
+        {
+          transform: [{ translateX: slideAnim }],
+          opacity: opacityAnim,
+        }
+      ]}
+    >
+      <TouchableOpacity style={screenStyles.messageRow} activeOpacity={0.7}>
+        <View style={screenStyles.messageAvatarContainer}>
+          <View style={screenStyles.avatarBorder}>
+            <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
+          </View>
+          {isOnline && <View style={screenStyles.onlineIndicator} />}
+        </View>
+
+        <View style={screenStyles.messageContent}>
+          <View style={screenStyles.messageHeader}>
+            <Text style={screenStyles.messageSender} numberOfLines={1}>{item.sender}</Text>
+            <Text style={screenStyles.messageTimestamp}>
+              {formatRelativeTime(item.timestamp)}
+            </Text>
+          </View>
+          
+          <View style={screenStyles.messagePreviewContainer}>
+            {isTyping && (
+              <View style={screenStyles.typingIndicatorContainer}>
+                <View style={screenStyles.typingDot} />
+                <View style={[screenStyles.typingDot, { animationDelay: '0.2s' }]} />
+                <View style={[screenStyles.typingDot, { animationDelay: '0.4s' }]} />
+              </View>
+            )}
+            <Text
+              numberOfLines={2}
+              style={[screenStyles.messagePreview, isTyping && screenStyles.typingText]}>
+              {messagePreview}
+            </Text>
+          </View>
+        </View>
+
+        <View style={screenStyles.messageRight}>
+          {item.unreadCount > 0 && (
+            <View style={screenStyles.unreadBadge}>
+              <Text style={screenStyles.unreadCount}>
+                {item.unreadCount > 99 ? '99+' : item.unreadCount}
+              </Text>
+            </View>
+          )}
+          <View style={screenStyles.messageArrow} />
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -84,7 +162,6 @@ const MessagesScreen = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const isHeaderCollapsed = useRef(false);
 
-  // --- THAY ĐỔI 2: Cập nhật kiểu cho ref ---
   const flatListRef = useRef<React.ElementRef<typeof LegendList>>(null);
 
   const filteredMessages = MESSAGES_DATA.filter(
@@ -104,7 +181,6 @@ const MessagesScreen = () => {
     }).start();
   };
   
-  // Hàm scrollToTop vẫn hoạt động bình thường
   const scrollToTop = () => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
@@ -123,20 +199,24 @@ const MessagesScreen = () => {
     };
   }, []);
 
-
   const renderListHeader = () => (
-      <View style={screenStyles.activitiesSection}>
-          <Text style={screenStyles.sectionTitle}>Activities</Text>
-          {/* --- THAY ĐỔI 3: Dùng LegendList cho danh sách ngang --- */}
-          <LegendList<ActivityItemProps>
-              data={ACTIVITIES_DATA}
-              renderItem={({ item }) => <ActivityItem item={item} />}
-              keyExtractor={item => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16 }}
-          />
+    <View style={screenStyles.activitiesSection}>
+      <View style={screenStyles.sectionHeader}>
+        <Text style={screenStyles.sectionTitle}>💕 Hoạt động gần đây</Text>
+        <TouchableOpacity style={screenStyles.seeAllButton}>
+          <Text style={screenStyles.seeAllText}>Xem tất cả</Text>
+        </TouchableOpacity>
       </View>
+      
+      <LegendList<ActivityItemProps>
+        data={ACTIVITIES_DATA}
+        renderItem={({ item }) => <ActivityItem item={item} />}
+        keyExtractor={item => item.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={screenStyles.activitiesContainer}
+      />
+    </View>
   );
 
   return (
@@ -149,106 +229,300 @@ const MessagesScreen = () => {
         onFilterPress={() => alert('Filter button pressed!')}
         onTitlePress={scrollToTop}
       />
-      {/* --- THAY ĐỔI 4: Dùng LegendList cho danh sách chính và cập nhật props --- */}
+      
       <LegendList<MessageItemProps>
         ref={flatListRef}
         data={filteredMessages}
-        renderItem={({ item }) => <MessageItem item={item} />}
+        renderItem={({ item, index }) => <MessageItem item={item} index={index} />}
         keyExtractor={item => item.id}
         ListHeaderComponent={renderListHeader}
         contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
         onScroll={({ nativeEvent }: { nativeEvent: NativeScrollEvent }) => {
-            scrollY.setValue(nativeEvent.contentOffset.y);
+          scrollY.setValue(nativeEvent.contentOffset.y);
         }}
-        // scrollEventThrottle đã được xóa
+        ItemSeparatorComponent={() => <View style={screenStyles.separator} />}
       />
     </SafeAreaView>
   );
 };
 
-// --- StyleSheet cho màn hình (Không thay đổi) ---
+// --- StyleSheet theo màu chủ đạo của app ---
 const screenStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FFFBF5', // Warm white background như trong ảnh
   },
+  
+  // Activities Section - Vibrant Pink Theme
   activitiesSection: {
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingVertical: 24,
     backgroundColor: '#FFFFFF',
+    marginBottom: 12,
+    borderRadius: 24,
+    marginHorizontal: 16,
+    marginTop: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF1493',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
+  
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-    marginBottom: 15,
-    color: '#000000',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FF1493', // Hot pink
+    letterSpacing: -0.5,
   },
+  
+  seeAllButton: {
+    backgroundColor: '#FFE4E1',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FF69B4',
+  },
+  
+  seeAllText: {
+    fontSize: 14,
+    color: '#FF1493',
+    fontWeight: '700',
+  },
+  
+  activitiesContainer: {
+    paddingHorizontal: 16,
+  },
+  
+  // Activity Items - Gradient Style
   activityItem: {
     alignItems: 'center',
-    marginRight: 15,
+    marginHorizontal: 8,
+    width: 80,
+    paddingVertical: 8,
   },
+  
+  activityAvatarWrapper: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  
+  activityGradientBorder: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    padding: 3,
+    backgroundColor: '#FF1493', // Pink gradient effect
+  },
+  
   activityAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    borderColor: '#DDA0DD',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: '#FFF',
   },
+  
+  activityOnline: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#00FF7F', // Spring green
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  
   activityName: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#000000',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333333',
+    textAlign: 'center',
   },
+  
+  // Message Items - Card Style
+  messageContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+  
   messageRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    minHeight: 80,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF1493',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
-  messageAvatar: {
+  
+  messageAvatarContainer: {
+    position: 'relative',
+    marginRight: 16,
+  },
+  
+  avatarBorder: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    marginRight: 15,
+    padding: 2,
+    backgroundColor: '#FF69B4', // Pink border
   },
+  
+  messageAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FFF',
+  },
+  
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#00FF7F',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  
   messageContent: {
     flex: 1,
+    justifyContent: 'center',
   },
+  
+  messageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  
   messageSender: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
+    fontWeight: '700',
+    color: '#2D2D2D',
+    letterSpacing: -0.2,
+    flex: 1,
   },
+  
+  messageTimestamp: {
+    fontSize: 12,
+    color: '#999999',
+    fontWeight: '500',
+  },
+  
+  messagePreviewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
   messagePreview: {
     fontSize: 14,
     color: '#666666',
+    lineHeight: 20,
+    letterSpacing: -0.1,
+    flex: 1,
   },
+  
   typingText: {
-    color: '#DDA0DD',
-    fontWeight: 'bold',
+    color: '#FF1493',
+    fontWeight: '600',
+    fontStyle: 'italic',
   },
-  messageInfo: {
-    alignItems: 'flex-end',
+  
+  typingIndicatorContainer: {
+    flexDirection: 'row',
+    marginRight: 8,
   },
-  messageTimestamp: {
-    fontSize: 12,
-    color: '#A0A0A0',
+  
+  typingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF1493',
+    marginHorizontal: 1,
+    // Animation would be handled by a library in real implementation
   },
+  
+  messageRight: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  messageArrow: {
+    width: 6,
+    height: 12,
+    marginLeft: 8,
+    backgroundColor: '#FFB6C1',
+    transform: [{ rotate: '45deg' }],
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+  },
+  
+  // Unread Badge - Vibrant Style
   unreadBadge: {
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    backgroundColor: '#FF1493',
+    borderRadius: 16,
+    minWidth: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 6,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF1493',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
+  
   unreadCount: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  
+  separator: {
+    height: 8,
+    backgroundColor: 'transparent',
   },
 });
 

@@ -11,20 +11,30 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+// BlurView might need a different import based on your setup.
+// This is a common one, but adjust if necessary.
 import { BlurView } from '@react-native-community/blur';
 
-// --- Các hằng số cho Animation ---
+// --- Animation Constants ---
 export const HEADER_MAX_HEIGHT = 140; 
 export const HEADER_MIN_HEIGHT = 90; 
 export const ANIMATION_DURATION = 350;
 
-// SỬA ĐỔI: Thêm interface cho props của GlassButton
+// --- Color Palette ---
+const COLORS = {
+  hotPink: '#FF1493',   // For titles, borders
+  lightPink: '#FF69B4',  // For buttons, accents, icons
+  softPink: '#FFB6C1',   // For placeholders, decorative elements
+  pinkBlush: '#FFE4E1',  // For button backgrounds
+  warmWhite: '#FFFBF5',  // Main background
+  darkText: '#333333',   // For readable text
+};
+
 interface GlassButtonProps {
   onPress: () => void;
   children: React.ReactNode;
 }
 
-// SỬA ĐỔI: Component GlassButton mới
 const GlassButton: React.FC<GlassButtonProps> = ({ onPress, children }) => {
   const animValue = useRef(new Animated.Value(0)).current;
 
@@ -75,7 +85,6 @@ const GlassButton: React.FC<GlassButtonProps> = ({ onPress, children }) => {
 };
 
 
-// Props giờ sẽ nhận vào một giá trị Animated mới
 interface MessagesHeaderProps {
   animation: Animated.Value; 
   title: string;
@@ -173,13 +182,13 @@ const Header: React.FC<MessagesHeaderProps> = ({
         <BlurView
           style={StyleSheet.absoluteFill}
           blurType="light"
-          blurAmount={10}
+          blurAmount={15}
         />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.8)' }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 251, 245, 0.85)' }]} />
       )}
       <View style={styles.contentContainer}>
-        {/* Header thu nhỏ (hiện ra khi cuộn) */}
+        {/* Collapsed Header */}
         <Animated.View 
             style={[styles.smallHeader, { opacity: smallHeaderOpacity }]}
             pointerEvents={isCollapsed ? 'auto' : 'none'}
@@ -187,24 +196,24 @@ const Header: React.FC<MessagesHeaderProps> = ({
           
           <Animated.View style={[styles.pillsContainer, { opacity: pillsOpacity, pointerEvents: isSearchActive ? 'none' : 'auto' }]}>
             <GlassButton onPress={() => toggleSearch(true)}>
-                <Ionicons name="search" size={22} color="#333" />
+                <Ionicons name="search" size={22} color={COLORS.lightPink} />
             </GlassButton>
             <TouchableOpacity onPress={onTitlePress}>
                 <Text style={styles.smallHeaderTitle}>{title}</Text>
             </TouchableOpacity>
             <GlassButton onPress={onFilterPress}>
-                <Ionicons name="ellipsis-horizontal" size={22} color="#333" />
+                <Ionicons name="ellipsis-horizontal" size={22} color={COLORS.lightPink} />
             </GlassButton>
           </Animated.View>
 
           <Animated.View style={[styles.smallSearchWrapper, { opacity: smallSearchOpacity, pointerEvents: isSearchActive ? 'auto' : 'none' }]}>
             <Animated.View style={[styles.searchContainer, { width: smallSearchWidth }]}>
-                <Ionicons name="search" size={18} color="#8E8E93" style={styles.searchIcon} />
+                <Ionicons name="search" size={18} color={COLORS.lightPink} style={styles.searchIcon} />
                 <TextInput
                   ref={searchInputRef}
                   style={styles.searchInput}
                   placeholder="Search"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={COLORS.softPink}
                 />
             </Animated.View>
             <Animated.View style={{ opacity: cancelOpacity }}>
@@ -216,7 +225,7 @@ const Header: React.FC<MessagesHeaderProps> = ({
 
         </Animated.View>
 
-        {/* Header lớn (ẩn đi khi cuộn) */}
+        {/* Expanded Header */}
         <Animated.View 
             style={[styles.largeHeader, { opacity: largeHeaderOpacity }]}
             pointerEvents={isCollapsed ? 'none' : 'auto'}
@@ -224,16 +233,16 @@ const Header: React.FC<MessagesHeaderProps> = ({
           <View style={styles.headerRow}>
               <Text style={styles.headerTitle}>{title}</Text>
               <GlassButton onPress={onFilterPress}>
-                 <Ionicons name="ellipsis-horizontal" size={24} color="#333" />
+                 <Ionicons name="ellipsis-horizontal" size={24} color={COLORS.lightPink} />
               </GlassButton>
           </View>
           <View style={styles.searchSection}>
               <View style={styles.searchContainer}>
-                <Ionicons name="search" size={18} color="#8E8E93" style={styles.searchIcon} />
+                <Ionicons name="search" size={18} color={COLORS.lightPink} style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={COLORS.softPink}
                   value={searchText}
                   onChangeText={onSearchTextChange}
                 />
@@ -252,6 +261,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1000,
+    // The warm white background is applied via the BlurView/View inside
   },
   contentContainer: {
     flex: 1,
@@ -283,7 +293,7 @@ const styles = StyleSheet.create({
   smallHeaderTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#000000',
+    color: COLORS.hotPink,
   },
   smallSearchWrapper: {
     position: 'absolute',
@@ -296,9 +306,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cancelButton: {
-    color: '#007AFF',
+    color: COLORS.lightPink,
     fontSize: 17,
     marginLeft: 10,
+    fontWeight: '500',
   },
   // --- Large Header Styles ---
   largeHeader: {
@@ -318,7 +329,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#000000',
+    color: COLORS.hotPink,
   },
   searchSection: {
     paddingHorizontal: 16,
@@ -326,7 +337,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(118, 118, 128, 0.12)',
+    backgroundColor: 'rgba(255, 228, 225, 0.6)', // Pink Blush with transparency
     borderRadius: 10,
     height: 36,
     paddingHorizontal: 8,
@@ -338,33 +349,34 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 17,
-    color: '#000000',
+    color: COLORS.darkText,
   },
-  // Styles cho GlassButton
+  // Styles for GlassButton
   glassButtonWrapper: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    shadowColor: '#000',
+    shadowColor: COLORS.softPink,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
   },
   glassButtonBorder: {
     flex: 1,
     borderRadius: 22,
     borderWidth: 1.5,
-    borderColor: 'rgba(60, 60, 67, 0.2)',
+    borderColor: 'rgba(255, 20, 147, 0.3)', // Hot Pink with transparency
     justifyContent: 'center',
     alignItems: 'center',
   },
   glassButtonInner: {
     flex: 1,
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 228, 225, 0.7)', // Pink Blush with transparency
     borderRadius: 21,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
 });
 
