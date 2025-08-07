@@ -3,7 +3,7 @@ import '../global.css';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import '@/global.css';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-
+import '../i18n';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Toaster } from 'sonner-native';
