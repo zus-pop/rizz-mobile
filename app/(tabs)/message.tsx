@@ -87,12 +87,42 @@ const MessageItem = ({ item, index }: { item: MessageItemProps; index: number })
   return (
     <Animated.View style={[screenStyles.messageContainer, { transform: [{ translateX: slideAnim }], opacity: opacityAnim }]}>
       <TouchableOpacity style={screenStyles.messageRow} activeOpacity={0.7}>
-        <View style={screenStyles.messageAvatarContainer}><View style={screenStyles.avatarBorder}><Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} /></View>{isOnline && <View style={screenStyles.onlineIndicator} />}</View>
-        <View style={screenStyles.messageContent}>
-          <View style={screenStyles.messageHeader}><Text style={screenStyles.messageSender} numberOfLines={1}>{item.sender}</Text><Text style={screenStyles.messageTimestamp}>{formatRelativeTime(item.timestamp)}</Text></View>
-          <View style={screenStyles.messagePreviewContainer}>{isTyping && <View style={screenStyles.typingIndicatorContainer}><View style={screenStyles.typingDot} /><View style={[screenStyles.typingDot, { animationDelay: '0.2s' }]} /><View style={[screenStyles.typingDot, { animationDelay: '0.4s' }]} /></View>}<Text numberOfLines={2} style={[screenStyles.messagePreview, isTyping && screenStyles.typingText]}>{isTyping ? t('typing') : messagePreview}</Text></View>
+        {/* Cột Avatar (trái) - Không đổi */}
+        <View style={screenStyles.messageAvatarContainer}>
+            <View style={screenStyles.avatarBorder}>
+                <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
+            </View>
+            {isOnline && <View style={screenStyles.onlineIndicator} />}
         </View>
-        <View style={screenStyles.messageRight}>{item.unreadCount > 0 && <View style={screenStyles.unreadBadge}><Text style={screenStyles.unreadCount}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text></View>}</View>
+
+        {/* Cột nội dung (giữa) - Giờ chỉ chứa Tên và Preview */}
+        <View style={screenStyles.messageContent}>
+          {/* SỬA ĐỔI: Header giờ chỉ còn tên người gửi */}
+          <View style={screenStyles.messageHeader}>
+            <Text style={screenStyles.messageSender} numberOfLines={1}>{item.sender}</Text>
+            {/* <<< Timestamp đã được di chuyển từ đây */}
+          </View>
+          <View style={screenStyles.messagePreviewContainer}>
+            {isTyping && <View style={screenStyles.typingIndicatorContainer}><View style={screenStyles.typingDot} /><View style={[screenStyles.typingDot, { animationDelay: '0.2s' }]} /><View style={[screenStyles.typingDot, { animationDelay: '0.4s' }]} /></View>}
+            <Text numberOfLines={2} style={[screenStyles.messagePreview, isTyping && screenStyles.typingText]}>
+              {isTyping ? t('typing') : messagePreview}
+            </Text>
+          </View>
+        </View>
+
+        {/* THÊM MỚI: Cột thông tin (phải) - Chứa Timestamp và Unread Badge */}
+        <View style={screenStyles.messageInfoContainer}>
+            <Text style={screenStyles.messageTimestamp}>{formatRelativeTime(item.timestamp)}</Text>
+            {item.unreadCount > 0 && (
+                <View style={screenStyles.unreadBadge}>
+                    <Text style={screenStyles.unreadCount}>
+                        {item.unreadCount > 99 ? '99+' : item.unreadCount}
+                    </Text>
+                </View>
+            )}
+        </View>
+        
+        {/* <<< View messageRight cũ đã được xóa */}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -187,6 +217,7 @@ const MessagesScreen = () => {
 
 // --- Styles ---
 const screenStyles = StyleSheet.create({
+  // ... (giữ nguyên các style từ 'container' đến 'onlineIndicator')
   container: { flex: 1, backgroundColor: '#FFFBF5' },
   activitiesSection: { paddingVertical: 24, backgroundColor: '#FFFFFF', marginBottom: 12, borderRadius: 24, marginHorizontal: 16, marginTop: 16, ...Platform.select({ ios: { shadowColor: '#FF1493', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 16 }, android: { elevation: 8 } }) },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 },
@@ -206,17 +237,54 @@ const screenStyles = StyleSheet.create({
   avatarBorder: { width: 56, height: 56, borderRadius: 28, padding: 2, backgroundColor: '#FF69B4' },
   messageAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFF' },
   onlineIndicator: { position: 'absolute', bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: '#00FF7F', borderWidth: 2, borderColor: '#FFFFFF' },
+  
   messageContent: { flex: 1, justifyContent: 'center' },
-  messageHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+
+  // SỬA ĐỔI: messageHeader không cần căn chỉnh nữa
+  messageHeader: { 
+    marginBottom: 6,
+    // Xóa: flexDirection, justifyContent, alignItems
+  },
+
   messageSender: { fontSize: 16, fontWeight: '700', color: '#2D2D2D', letterSpacing: -0.2, flex: 1 },
-  messageTimestamp: { fontSize: 12, color: '#999999', fontWeight: '500' },
+  
+  // SỬA ĐỔI: timestamp sẽ dùng style cũ của nó nhưng ở vị trí mới
+  messageTimestamp: { 
+    fontSize: 12, 
+    color: '#999999', 
+    fontWeight: '500', 
+    marginBottom: 8, // Thêm khoảng cách với badge bên dưới
+  },
+
   messagePreviewContainer: { flexDirection: 'row', alignItems: 'center' },
   messagePreview: { fontSize: 14, color: '#666666', lineHeight: 20, letterSpacing: -0.1, flex: 1 },
   typingText: { color: '#FF1493', fontWeight: '600', fontStyle: 'italic' },
   typingIndicatorContainer: { flexDirection: 'row', marginRight: 8 },
   typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF1493', marginHorizontal: 1 },
-  messageRight: { alignItems: 'center', justifyContent: 'center' },
-  unreadBadge: { backgroundColor: '#FF1493', borderRadius: 16, minWidth: 24, height: 24, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8, marginBottom: 8, borderWidth: 2, borderColor: '#FFFFFF', ...Platform.select({ ios: { shadowColor: '#FF1493', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8 }, android: { elevation: 6 } }) },
+
+  // XÓA: messageRight không còn được sử dụng nữa
+
+  // THÊM MỚI: Container cho cột thông tin bên phải
+  messageInfoContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginLeft: 8, // Tạo khoảng cách với cột nội dung
+  },
+  
+  // SỬA ĐỔI: unreadBadge giờ sẽ nằm trong cột thông tin
+  unreadBadge: { 
+    backgroundColor: '#FF1493', 
+    borderRadius: 16, 
+    minWidth: 24, 
+    height: 24, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingHorizontal: 8,
+    // Xóa: marginBottom, borderWidth, borderColor, shadow... (có thể giữ lại nếu muốn hiệu ứng)
+    borderWidth: 2, 
+    borderColor: '#FFFFFF', 
+  },
+  
   unreadCount: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', textAlign: 'center' },
   separator: { height: 8, backgroundColor: 'transparent' },
 });
