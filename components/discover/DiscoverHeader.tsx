@@ -2,10 +2,17 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; // Or use
 import { TouchableOpacity, View } from 'react-native';
 import { Text } from '../ui/text';
 
-const DiscoverHeader = () => {
+interface DiscoverHeaderProps {
+  onFilterPress?: () => void;
+}
+
+const DiscoverHeader = ({ onFilterPress }: DiscoverHeaderProps) => {
   return (
-    <View className="h-14 w-full flex-row items-center justify-between px-4">
+    <View
+      className="h-14 w-full flex-row items-center justify-between px-4"
+      pointerEvents="box-none">
       <TouchableOpacity
+        onPress={() => console.log('Game controller pressed')}
         style={{
           backgroundColor: 'rgba(255,255,255,0.15)',
           borderRadius: 16,
@@ -14,10 +21,13 @@ const DiscoverHeader = () => {
         }}>
         <Ionicons name="game-controller" size={30} color="#FA5EFF" />
       </TouchableOpacity>
-      <Text size="3xl" className="font-bold text-black">
-        Discover
-      </Text>
+      <TouchableOpacity onPress={() => console.log('Text pressed')}>
+        <Text size="3xl" className="font-bold text-black">
+          Discover
+        </Text>
+      </TouchableOpacity>
       <TouchableOpacity
+        onPress={onFilterPress}
         style={{
           backgroundColor: 'rgba(255,255,255,0.15)',
           borderRadius: 16,

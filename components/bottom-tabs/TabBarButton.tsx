@@ -1,9 +1,10 @@
 import { Feather } from '@expo/vector-icons';
-import { JSX, useEffect, useMemo } from 'react';
+import { JSX, useMemo } from 'react';
 import { Pressable } from 'react-native';
 import Animated, {
   interpolate,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
@@ -17,6 +18,8 @@ interface TabBarButtonProps {
   color: string;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 const TabBarButton = ({
   color,
   routeName,
@@ -26,10 +29,13 @@ const TabBarButton = ({
   onPress,
 }: TabBarButtonProps) => {
   const iconSize = useMemo(() => 30, []);
-  const icons: Record<string, (props: any) => JSX.Element> = {
-    discover: (props: any) => <Feather name="home" size={iconSize} {...props} />,
-    liked: (props: any) => <Feather name="heart" size={iconSize} {...props} />,
-  };
+  const icons: Record<string, (props: any) => JSX.Element> = useMemo(
+    () => ({
+      index: (props: any) => <Feather name="home" size={iconSize} {...props} />,
+      liked: (props: any) => <Feather name="heart" size={iconSize} {...props} />,
+    }),
+    []
+  );
 
   const scale = useSharedValue(0);
 
@@ -51,12 +57,12 @@ const TabBarButton = ({
     };
   });
 
-  useEffect(() => {
-    scale.value = withSpring(isFocused ? 1 : 0, { duration: 333 });
-  }, [isFocused, scale]);
+  useDerivedValue(() => {
+    scale.value = withSpring(isFocused ? 1 : 0, { duration: 300 });
+  }, [isFocused]);
 
   return (
-    <Pressable
+    <AnimatedPressable
       className="flex-1 items-center justify-center"
       key={routeName}
       onPress={onPress}
@@ -72,7 +78,7 @@ const TabBarButton = ({
       <Animated.Text style={[{ color: color, fontSize: 18 }, animatedTextStyle]}>
         {label}
       </Animated.Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 

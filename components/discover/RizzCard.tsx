@@ -6,9 +6,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
+  Extrapolation,
+  interpolate,
   runOnJS,
+  SensorType,
   SharedValue,
   useAnimatedReaction,
+  useAnimatedSensor,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -22,12 +26,21 @@ const { width, height } = WINDOW;
 const CARD_WIDTH = width * 0.7;
 const CARD_HEIGHT = height * 0.55;
 const SIDE = (width + CARD_WIDTH + 80) / 2;
-const ASPECT_RATIO = 722 / 368;
-const IMAGE_WIDTH = CARD_WIDTH * 0.9;
 const DURATION = 100;
 const LEFT_SWIPE_THRESH_HOLD = -SIDE;
 const RIGHT_SWIPE_THRESH_HOLD = SIDE;
 const SNAP_POINTS = [LEFT_SWIPE_THRESH_HOLD, 0, RIGHT_SWIPE_THRESH_HOLD];
+
+// Simplified animation configs for better performance
+const SPRING_CONFIG = {
+  damping: 30,
+  stiffness: 100,
+  mass: 1,
+};
+
+const TIMING_CONFIG = {
+  easing: Easing.inOut(Easing.ease),
+};
 
 interface RizzCardProps {
   index: number;
@@ -40,8 +53,10 @@ interface RizzCardProps {
   onSwipeRight: () => void;
   onSwipeLeft: () => void;
   onUndoSwipe: () => void;
+  enableDeviceMotion?: boolean; // New prop for device motion control
 }
 
+// Simplified component for better performance
 const RizzCard = ({
   index,
   length,
@@ -53,7 +68,9 @@ const RizzCard = ({
   onSwipeLeft,
   onSwipeRight,
   onUndoSwipe,
+  enableDeviceMotion = false,
 }: RizzCardProps) => {
+  // Simplified constants
   const perspective = useMemo(() => 888, []);
   const damping = useMemo(() => 30, []);
   const theta = useMemo(() => Math.random() * 20 - 10, []);
@@ -66,11 +83,55 @@ const RizzCard = ({
   const rotateZ = useSharedValue(0);
   const scale = useSharedValue(1);
   const isCardShowing = useSharedValue<boolean>(false);
+
+  // Simplified opacity calculation
   const opacity = useDerivedValue(() =>
     index >= currentIndex.value && index < currentIndex.value + maxVisible
       ? withTiming(1, { easing: Easing.inOut(Easing.ease) })
       : withTiming(0, { easing: Easing.inOut(Easing.ease) })
   );
+
+  const rotationGravity = useAnimatedSensor(SensorType.GRAVITY, {
+    interval: 16,
+  });
+
+  useAnimatedReaction(
+    () => enableDeviceMotion,
+    () => {
+      if (isCardShowing.value) isCardShowing.value = !isCardShowing.value;
+    }
+  );
+
+  useDerivedValue(() => {
+    'worklet';
+    if (enableDeviceMotion && currentIndex.value === index) {
+      // Device motion is enabled and this is the current card
+      const { z } = rotationGravity.sensor.value;
+
+      scale.value = withSpring(
+        interpolate(z, [-9.5, -8.5], [1, 1.32], Extrapolation.CLAMP),
+        SPRING_CONFIG
+      );
+      rotateX.value = withSpring(
+        interpolate(z, [-9.5, -8.5], [30, 0], Extrapolation.CLAMP),
+        SPRING_CONFIG
+      );
+      rotateZ.value = withSpring(
+        interpolate(z, [-9.5, -8.5], [theta, 0], Extrapolation.CLAMP),
+        SPRING_CONFIG
+      );
+    } else if (currentIndex.value !== index) {
+      // Non-current cards should remain in lying down position
+      rotateX.value = withSpring(30, SPRING_CONFIG); // Lying down
+      scale.value = withSpring(1, SPRING_CONFIG); // Normal scale
+      rotateZ.value = withSpring(theta, SPRING_CONFIG); // Original random rotation
+    } else if (!enableDeviceMotion && currentIndex.value === index && !isCardShowing.value) {
+      // Device motion disabled, current card, not showing - return to lying down
+      rotateX.value = withSpring(30, SPRING_CONFIG); // Lying down
+      scale.value = withSpring(1, SPRING_CONFIG); // Normal scale
+      rotateZ.value = withSpring(theta, SPRING_CONFIG); // Original random rotation
+    }
+  });
 
   useEffect(() => {
     const delay = 1000 + index * DURATION;
@@ -78,35 +139,45 @@ const RizzCard = ({
       delay,
       withTiming(0, {
         duration: DURATION,
-        easing: Easing.inOut(Easing.ease),
+        easing: Easing.out(Easing.quad),
       })
     );
     rotateZ.value = withDelay(
       delay,
       withTiming(theta, {
         duration: DURATION,
-        easing: Easing.inOut(Easing.ease),
+        easing: Easing.out(Easing.quad),
       })
     );
-  }, [index, translateY]);
+  }, [index, translateY, theta]);
 
+  // Optimized card showing animation with motion isolation
   useAnimatedReaction(
     () => isCardShowing.value,
     () => {
       if (isCardShowing.value && currentIndex.value === index) {
-        scale.value = withTiming(1.3, { easing: Easing.inOut(Easing.ease) });
-        rotateZ.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
-        rotateX.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
+        // Current card showing animation
+        scale.value = withTiming(1.32, TIMING_CONFIG);
+        rotateZ.value = withTiming(0, TIMING_CONFIG);
+        rotateX.value = withTiming(0, TIMING_CONFIG);
       }
 
       if (!isCardShowing.value && currentIndex.value === index) {
-        scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-        rotateZ.value = withTiming(Math.random() * 20 - 10, { easing: Easing.inOut(Easing.ease) });
-        rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+        // Current card hiding animation
+        scale.value = withTiming(1, TIMING_CONFIG);
+        rotateZ.value = withTiming(Math.random() * 20 - 10, TIMING_CONFIG);
+        rotateX.value = withTiming(30, TIMING_CONFIG);
+      }
+
+      // Non-current cards should always remain lying down
+      if (currentIndex.value !== index) {
+        scale.value = withTiming(1, TIMING_CONFIG);
+        rotateX.value = withTiming(30, TIMING_CONFIG); // Keep lying down
       }
     }
   );
 
+  // Optimized swipe direction handling with motion isolation
   useAnimatedReaction(
     () => swipeDirection.value,
     (value) => {
@@ -114,55 +185,72 @@ const RizzCard = ({
       switch (value) {
         case 'left':
           if (currentIndex.value === index) {
-            translateX.value = withSpring(LEFT_SWIPE_THRESH_HOLD, { velocity, damping });
-            scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-            rotateZ.value = withTiming(Math.random() * 20 - 10, {
-              easing: Easing.inOut(Easing.ease),
+            translateX.value = withSpring(LEFT_SWIPE_THRESH_HOLD, {
+              velocity,
+              ...SPRING_CONFIG,
             });
-            rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+            scale.value = withTiming(1, TIMING_CONFIG);
+            rotateZ.value = withTiming(Math.random() * 20 - 10, TIMING_CONFIG);
+            rotateX.value = withTiming(30, TIMING_CONFIG);
             runOnJS(onSwipeLeft)();
             swipeDirection.value = 'idle';
+          } else {
+            // Ensure non-current cards remain lying down
+            rotateX.value = withTiming(30, TIMING_CONFIG);
+            scale.value = withTiming(1, TIMING_CONFIG);
           }
           break;
         case 'right':
           if (currentIndex.value === index) {
-            translateX.value = withSpring(RIGHT_SWIPE_THRESH_HOLD, { velocity, damping });
-            scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-            rotateZ.value = withTiming(Math.random() * 20 - 10, {
-              easing: Easing.inOut(Easing.ease),
+            translateX.value = withSpring(RIGHT_SWIPE_THRESH_HOLD, {
+              velocity,
+              ...SPRING_CONFIG,
             });
-            rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+            scale.value = withTiming(1, TIMING_CONFIG);
+            rotateZ.value = withTiming(Math.random() * 20 - 10, TIMING_CONFIG);
+            rotateX.value = withTiming(30, TIMING_CONFIG);
             runOnJS(onSwipeRight)();
             swipeDirection.value = 'idle';
+          } else {
+            // Ensure non-current cards remain lying down
+            rotateX.value = withTiming(30, TIMING_CONFIG);
+            scale.value = withTiming(1, TIMING_CONFIG);
           }
           break;
         case 'undo':
           if (currentIndex.value === index && isCardShowing.value) {
-            scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-            rotateZ.value = withTiming(Math.random() * 20 - 10, {
-              easing: Easing.inOut(Easing.ease),
-            });
-            rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+            scale.value = withTiming(1, TIMING_CONFIG);
+            rotateZ.value = withTiming(Math.random() * 20 - 10, TIMING_CONFIG);
+            rotateX.value = withTiming(30, TIMING_CONFIG);
             isCardShowing.value = !isCardShowing.value;
           }
           if (currentIndex.value - 1 === index) {
-            translateX.value = withSpring(0, { velocity, damping });
-            scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-            rotateZ.value = withTiming(Math.random() * 20 - 10, {
-              easing: Easing.inOut(Easing.ease),
-            });
-            rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
+            translateX.value = withSpring(0, { velocity, ...SPRING_CONFIG });
+            scale.value = withTiming(1, TIMING_CONFIG);
+            rotateZ.value = withTiming(Math.random() * 20 - 10, TIMING_CONFIG);
+            rotateX.value = withTiming(30, TIMING_CONFIG);
             if (isCardShowing) isCardShowing.value = false;
             runOnJS(onUndoSwipe)();
+          }
+          // Ensure non-current cards remain lying down during undo
+          if (currentIndex.value !== index && currentIndex.value - 1 !== index) {
+            rotateX.value = withTiming(30, TIMING_CONFIG);
+            scale.value = withTiming(1, TIMING_CONFIG);
           }
           if (index === length - 1) swipeDirection.value = 'idle';
           break;
         case 'idle':
+          // Ensure non-current cards remain in lying down state when idle
+          if (currentIndex.value !== index) {
+            rotateX.value = withTiming(30, TIMING_CONFIG);
+            scale.value = withTiming(1, TIMING_CONFIG);
+          }
           break;
       }
     }
   );
 
+  // Simplified pan gesture
   const panGesture = Gesture.Pan()
     .onStart(() => {
       if (currentIndex.value === index) {
@@ -170,7 +258,6 @@ const RizzCard = ({
         prevY.value = translateY.value;
         scale.value = withTiming(1.1, { easing: Easing.inOut(Easing.ease) });
         rotateZ.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
-        //   rotateX.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
       }
     })
     .onUpdate(({ translationX, translationY, velocityX }) => {
@@ -194,7 +281,6 @@ const RizzCard = ({
         translateY.value = withSpring(0, { velocity: velocityY, damping });
         scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
         rotateZ.value = withTiming(Math.random() * 20 - 10, { easing: Easing.inOut(Easing.ease) });
-        //   rotateX.value = withTiming(30, { easing: Easing.inOut(Easing.ease) });
         if (isCardShowing) isCardShowing.value = false;
 
         if (dest === LEFT_SWIPE_THRESH_HOLD) {
@@ -205,6 +291,7 @@ const RizzCard = ({
       }
     });
 
+  // Simplified animated style
   const animatedCardStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -220,7 +307,12 @@ const RizzCard = ({
     };
   });
 
-  const onPress = () => (isCardShowing.value = !isCardShowing.value);
+  const onPress = () => {
+    // Only allow onPress scaling when device motion is disabled
+    if (!enableDeviceMotion) {
+      isCardShowing.value = !isCardShowing.value;
+    }
+  };
 
   const onLongPress = () => {
     console.log('Long');
@@ -230,8 +322,7 @@ const RizzCard = ({
     <View
       pointerEvents="box-none"
       className="absolute inset-0 bottom-20 flex-1 items-center justify-center"
-      style={{ zIndex: reverse ? index : length - index }} // <-- Add zIndex so first card is on top
-    >
+      style={{ zIndex: reverse ? index : length - index }}>
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[animatedCardStyle, styles.cardContainer]}>
           <TouchableOpacity activeOpacity={1} onLongPress={onLongPress} onPress={onPress}>
@@ -243,6 +334,7 @@ const RizzCard = ({
   );
 };
 
+// Simplified Card component
 function Card({ profile }: { profile: Profile }) {
   return (
     <Animated.View

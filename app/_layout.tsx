@@ -21,7 +21,7 @@ export default function RootLayout() {
       <GluestackUIProvider mode="system">
         <QueryClientProvider client={queryClient}>
           <BottomSheetModalProvider>
-            <Stack>
+            <Stack initialRouteName="(tabs)">
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="onboarding" options={{ headerShown: false }} />
               <Stack.Screen name="profile-details" options={{ headerShown: false }} />

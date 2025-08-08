@@ -1,7 +1,7 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -11,6 +11,8 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import TabBarButton from './TabBarButton';
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export default function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { colors } = useTheme();
@@ -28,14 +30,14 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
   );
   const [dimensions, setDimensions] = useState({ height: 100, width: 100 });
 
-  const buttonWidth = dimensions.width / state.routes.length;
+  const buttonWidth = useMemo(() => dimensions.width / state.routes.length, [dimensions]);
 
-  const onTabBarLayout = (e: LayoutChangeEvent) => {
+  const onTabBarLayout = useCallback((e: LayoutChangeEvent) => {
     setDimensions({
       height: e.nativeEvent.layout.height,
       width: e.nativeEvent.layout.width,
     });
-  };
+  }, []);
 
   const tabBarPositionX = useSharedValue(0);
 
@@ -51,12 +53,12 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
       className={'shadow-md shadow-black/50'}
       style={{
         position: 'absolute',
-        bottom: 30,
+        bottom: 20,
         left: 0,
         right: 0,
         zIndex: 10,
       }}>
-      <BlurView
+      <AnimatedBlurView
         onLayout={onTabBarLayout}
         className="mx-20 flex-row items-center justify-between overflow-hidden rounded-full py-3 shadow-md shadow-black/50"
         style={{
@@ -73,7 +75,7 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
               position: 'absolute',
             },
           ]}>
-          <BlurView
+          <AnimatedBlurView
             style={{
               backgroundColor: 'rgba(0,0,0,1)',
               borderRadius: 30,
@@ -128,7 +130,7 @@ export default function MyTabBar({ state, descriptors, navigation }: BottomTabBa
             />
           );
         })}
-      </BlurView>
+      </AnimatedBlurView>
     </Animated.View>
   );
 }

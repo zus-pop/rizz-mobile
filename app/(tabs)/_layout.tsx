@@ -1,8 +1,6 @@
 import { Tabs } from 'expo-router';
 
-import MyTabBar from '@/components/MyTabBar';
-import { Text, View } from 'react-native';
-import DiscoverHeader from '../../components/discover/DiscoverHeader';
+import MyTabBar from '@/components/bottom-tabs/MyTabBar';
 
 export default function TabLayout() {
   return (
@@ -20,14 +18,7 @@ export default function TabLayout() {
         //   shadowOpacity: 0,
         // },
       }}>
-      <Tabs.Screen
-        name="discover"
-        options={{
-          title: 'Discover',
-          headerTitle: () => <DiscoverHeader />,
-          headerTransparent: true,
-        }}
-      />
+      <Tabs.Screen name="index" />
       <Tabs.Screen
         name="liked"
         options={{
