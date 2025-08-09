@@ -1,21 +1,22 @@
 import { fetchProfiles } from '@/api/profile';
+import AnimatedSwitch from '@/components/AnimatedSwitch';
 import DiscoverHeader from '@/components/discover/DiscoverHeader';
 import RizzCard from '@/components/discover/RizzCard';
 import SwipeButton from '@/components/discover/SwipeButton';
 import {
   BottomSheetHandle,
   BottomSheetModal,
-  BottomSheetScrollView,
   BottomSheetView,
+  CustomBackdrop,
 } from '@/components/ui/bottom-sheet';
-import CustomBackdrop from '@/components/ui/bottom-sheet/CustomBackdrop';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
+import { getHeaderTitle } from '@react-navigation/elements';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ScrollView, Switch } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import { runOnJS, useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
 
 export default function Discover() {
@@ -27,18 +28,20 @@ export default function Discover() {
     () => ['Music', 'Travel', 'Photography', 'Sports', 'Art', 'Food', 'Movies', 'Gaming'],
     []
   );
+
   const { data, fetchNextPage } = useInfiniteQuery({
     queryKey: ['profiles'],
     queryFn: ({ pageParam }) => fetchProfiles(pageParam),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
+    staleTime: 30 * 1000,
   });
 
   const currentIndex = useSharedValue<number>(0);
   const swipeDirection = useSharedValue<'left' | 'right' | 'idle' | 'undo'>('idle');
   const swipeButtonActionSize = useMemo(() => 40, []);
   const MAX_VISIBLE = useMemo(() => 3, []);
-  const [enableDeviceMotion, setEnableDeviceMotion] = useState<boolean>(false);
+  const enableDeviceMotion = useSharedValue<boolean>(false);
 
   // Bottom sheet reference
   const filterBottomSheetRef = useRef<BottomSheetModal>(null);
@@ -77,7 +80,11 @@ export default function Discover() {
       <Stack.Screen
         options={{
           title: 'Discover',
-          headerTitle: () => <DiscoverHeader onFilterPress={handlePresentFilterSheet} />,
+          header: ({ navigation, route, options }) => {
+            const title = getHeaderTitle(options, route.name);
+
+            return <DiscoverHeader title={title} onFilterPress={handlePresentFilterSheet} />;
+          },
           headerTransparent: true,
         }}
       />
@@ -157,8 +164,8 @@ export default function Discover() {
 
           {/* Scrollable Content */}
           <ScrollView
-            className="px-6"
-            showsVerticalScrollIndicator={true}
+            className="px-4"
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 32 }}
             bounces={true}
             overScrollMode="auto"
@@ -217,13 +224,17 @@ export default function Discover() {
             {/* Enable Device Motion Section */}
             <View className="mb-4">
               <View className="flex-row items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm">
-                <Text className="text-base font-medium text-gray-800">Device Motion</Text>
-                <Switch
+                <Text className="text-lg font-semibold text-gray-800">Device Motion</Text>
+                <AnimatedSwitch
                   value={enableDeviceMotion}
-                  onValueChange={setEnableDeviceMotion}
-                  trackColor={{ false: '#d1d5db', true: '#a78bfa' }}
-                  thumbColor={enableDeviceMotion ? '#8b5cf6' : '#f4f3f4'}
-                  style={{ transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }] }}
+                  onPress={() => {
+                    enableDeviceMotion.value = !enableDeviceMotion.value;
+                  }}
+                  trackColors={{
+                    off: '#d1d5db',
+                    on: '#a78bfa',
+                  }}
+                  duration={300}
                 />
               </View>
               <Text className="ml-1 mt-1 text-sm text-gray-500">

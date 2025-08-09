@@ -1,14 +1,16 @@
-import React, { Fragment, forwardRef } from 'react';
+import type { BottomSheetModal as BSModalType } from '@gorhom/bottom-sheet';
 import BottomSheet, {
-  BottomSheetView as BSView,
   BottomSheetModalProvider,
+  BottomSheetHandle as BSHandle,
   BottomSheetModal as BSModal,
   BottomSheetScrollView as BSScrollView,
-  BottomSheetHandle as BSHandle,
+  BottomSheetView as BSView,
 } from '@gorhom/bottom-sheet';
-import type { BottomSheetModal as BSModalType } from '@gorhom/bottom-sheet';
 import { cssInterop } from 'nativewind';
-import { BottomSheetProps, BSHandleProps } from './types';
+import React, { forwardRef, Fragment, useMemo } from 'react';
+import { TouchableWithoutFeedback } from 'react-native';
+import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import { BottomSheetProps, BSHandleProps, CustomBackdropProps } from './types';
 
 const BottomSheetTrigger = Fragment;
 
@@ -36,12 +38,38 @@ const BottomSheetScrollView = cssInterop(BSScrollView, {
 
 const BottomSheetHandle: React.FC<BSHandleProps> = BSHandle;
 
+const CustomBackdrop = ({ animatedIndex, style, onPress }: CustomBackdropProps) => {
+  // animated variables
+  const containerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(animatedIndex.value, [-1, 0], [0, 1], Extrapolation.CLAMP),
+  }));
+
+  // styles
+  const containerStyle = useMemo(
+    () => [
+      style,
+      {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      containerAnimatedStyle,
+    ],
+    [style, containerAnimatedStyle]
+  );
+
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <Animated.View style={containerStyle} />
+    </TouchableWithoutFeedback>
+  );
+};
+
 export {
   BottomSheet,
-  BottomSheetView,
-  BottomSheetModalProvider,
+  BottomSheetHandle,
   BottomSheetModal,
+  BottomSheetModalProvider,
   BottomSheetScrollView,
   BottomSheetTrigger,
-  BottomSheetHandle,
+  BottomSheetView,
+  CustomBackdrop,
 };

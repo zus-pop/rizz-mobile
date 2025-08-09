@@ -1,13 +1,15 @@
 //#region Gorhom Bottom Sheet
 
-import { BottomSheetProps as BSProps, BottomSheetHandleProps } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetProps as BSProps,
+  BottomSheetBackdropProps,
+  BottomSheetHandleProps,
+} from '@gorhom/bottom-sheet';
 
 export interface BSHandleProps extends BottomSheetHandleProps {
   className?: string;
 }
 //#endregion
-
-//#region Vaul
 
 /* eslint-disable no-unused-vars */
 interface WithFadeFromProps {}
@@ -27,29 +29,26 @@ interface DialogProps extends WithFadeFromProps, WithoutFadeFromProps {
   fixed?: boolean;
   dismissible?: boolean;
   handleOnly?: boolean;
-  onDrag?: (
-    event: React.PointerEvent<HTMLDivElement>,
-    percentageDragged: number
-  ) => void;
-  onRelease?: (
-    event: React.PointerEvent<HTMLDivElement>,
-    open: boolean
-  ) => void;
+  onDrag?: (event: React.PointerEvent<HTMLDivElement>, percentageDragged: number) => void;
+  onRelease?: (event: React.PointerEvent<HTMLDivElement>, open: boolean) => void;
   modal?: boolean;
   nested?: boolean;
   onClose?: () => void;
   // vaul property for Drawer direction
-  direction?: "top" | "bottom" | "left" | "right";
+  direction?: 'top' | 'bottom' | 'left' | 'right';
   preventScrollRestoration?: boolean;
   disablePreventScroll?: boolean;
 }
 //#endregion
 
-
 //#region Shared types
 export interface BottomSheetProps extends DialogProps, BSProps {
   children: React.ReactNode;
   isOpen?: boolean;
-  snapPoints?: Pick<BSProps, "snapPoints">["snapPoints"];
+  snapPoints?: Pick<BSProps, 'snapPoints'>['snapPoints'];
 }
 //#endregion
+
+export interface CustomBackdropProps extends BottomSheetBackdropProps {
+  onPress?: () => void;
+}

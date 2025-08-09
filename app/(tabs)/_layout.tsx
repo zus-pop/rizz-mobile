@@ -18,7 +18,12 @@ export default function TabLayout() {
         //   shadowOpacity: 0,
         // },
       }}>
-      <Tabs.Screen name="index" />
+      <Tabs.Screen
+        name="index"
+        options={{
+          headerTransparent: true,
+        }}
+      />
       <Tabs.Screen
         name="liked"
         options={{

@@ -31,9 +31,14 @@ const LEFT_SWIPE_THRESH_HOLD = -SIDE;
 const RIGHT_SWIPE_THRESH_HOLD = SIDE;
 const SNAP_POINTS = [LEFT_SWIPE_THRESH_HOLD, 0, RIGHT_SWIPE_THRESH_HOLD];
 
-// Simplified animation configs for better performance
 const SPRING_CONFIG = {
   damping: 30,
+  stiffness: 100,
+  mass: 1,
+};
+
+const MOTION_SPRING_CONFIG = {
+  damping: 15,
   stiffness: 100,
   mass: 1,
 };
@@ -53,7 +58,7 @@ interface RizzCardProps {
   onSwipeRight: () => void;
   onSwipeLeft: () => void;
   onUndoSwipe: () => void;
-  enableDeviceMotion?: boolean; // New prop for device motion control
+  enableDeviceMotion: SharedValue<boolean>; // New prop for device motion control
 }
 
 // Simplified component for better performance
@@ -68,8 +73,9 @@ const RizzCard = ({
   onSwipeLeft,
   onSwipeRight,
   onUndoSwipe,
-  enableDeviceMotion = false,
+  enableDeviceMotion,
 }: RizzCardProps) => {
+  const initialDone = useSharedValue(0);
   // Simplified constants
   const perspective = useMemo(() => 888, []);
   const damping = useMemo(() => 30, []);
@@ -96,7 +102,7 @@ const RizzCard = ({
   });
 
   useAnimatedReaction(
-    () => enableDeviceMotion,
+    () => enableDeviceMotion.value,
     () => {
       if (isCardShowing.value) isCardShowing.value = !isCardShowing.value;
     }
@@ -104,28 +110,28 @@ const RizzCard = ({
 
   useDerivedValue(() => {
     'worklet';
-    if (enableDeviceMotion && currentIndex.value === index) {
+    if (enableDeviceMotion.value && currentIndex.value === index && initialDone.value) {
       // Device motion is enabled and this is the current card
       const { z } = rotationGravity.sensor.value;
 
       scale.value = withSpring(
         interpolate(z, [-9.5, -8.5], [1, 1.32], Extrapolation.CLAMP),
-        SPRING_CONFIG
+        MOTION_SPRING_CONFIG
       );
       rotateX.value = withSpring(
         interpolate(z, [-9.5, -8.5], [30, 0], Extrapolation.CLAMP),
-        SPRING_CONFIG
+        MOTION_SPRING_CONFIG
       );
       rotateZ.value = withSpring(
         interpolate(z, [-9.5, -8.5], [theta, 0], Extrapolation.CLAMP),
-        SPRING_CONFIG
+        MOTION_SPRING_CONFIG
       );
     } else if (currentIndex.value !== index) {
       // Non-current cards should remain in lying down position
       rotateX.value = withSpring(30, SPRING_CONFIG); // Lying down
       scale.value = withSpring(1, SPRING_CONFIG); // Normal scale
       rotateZ.value = withSpring(theta, SPRING_CONFIG); // Original random rotation
-    } else if (!enableDeviceMotion && currentIndex.value === index && !isCardShowing.value) {
+    } else if (!enableDeviceMotion.value && currentIndex.value === index && !isCardShowing.value) {
       // Device motion disabled, current card, not showing - return to lying down
       rotateX.value = withSpring(30, SPRING_CONFIG); // Lying down
       scale.value = withSpring(1, SPRING_CONFIG); // Normal scale
@@ -149,6 +155,7 @@ const RizzCard = ({
         easing: Easing.out(Easing.quad),
       })
     );
+    initialDone.value = withDelay(delay + 1000, withTiming(1));
   }, [index, translateY, theta]);
 
   // Optimized card showing animation with motion isolation
@@ -309,7 +316,7 @@ const RizzCard = ({
 
   const onPress = () => {
     // Only allow onPress scaling when device motion is disabled
-    if (!enableDeviceMotion) {
+    if (!enableDeviceMotion.value) {
       isCardShowing.value = !isCardShowing.value;
     }
   };

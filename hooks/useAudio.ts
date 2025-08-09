@@ -39,13 +39,11 @@ export function useAudio(source: string | null = null) {
 
   const startRecording = async () => {
     if (!isReady) return;
-    console.log('here');
     await audioRecorder.prepareToRecordAsync();
     audioRecorder.record();
   };
 
   const stopRecording = async () => {
-    console.log('here');
     await audioRecorder.stop();
     setAudioSource(audioRecorder.uri);
     // audioPlayer.replace(audioRecorder.uri);

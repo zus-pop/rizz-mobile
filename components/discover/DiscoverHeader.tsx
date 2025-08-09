@@ -4,12 +4,13 @@ import { Text } from '../ui/text';
 
 interface DiscoverHeaderProps {
   onFilterPress?: () => void;
+  title: string;
 }
 
-const DiscoverHeader = ({ onFilterPress }: DiscoverHeaderProps) => {
+const DiscoverHeader = ({ onFilterPress, title }: DiscoverHeaderProps) => {
   return (
     <View
-      className="h-14 w-full flex-row items-center justify-between px-4"
+      className="h-32 w-full flex-row items-center justify-between px-4"
       pointerEvents="box-none">
       <TouchableOpacity
         onPress={() => console.log('Game controller pressed')}
@@ -23,7 +24,7 @@ const DiscoverHeader = ({ onFilterPress }: DiscoverHeaderProps) => {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => console.log('Text pressed')}>
         <Text size="3xl" className="font-bold text-black">
-          Discover
+          {title}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
