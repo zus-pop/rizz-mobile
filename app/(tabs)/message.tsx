@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler'; 
 import React, { useState, useRef, useEffect } from 'react';
 import {
   SafeAreaView,
@@ -6,27 +7,27 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  Animated,
   Platform,
   Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { LegendList } from '@legendapp/list';
-
-// --- Import data and types (Đảm bảo đường dẫn chính xác) ---
+import { LegendList, LegendListRenderItemProps } from '@legendapp/list'; 
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
 import {
   MESSAGES_DATA,
   ACTIVITIES_DATA,
   MessageItemProps,
   ActivityItemProps,
-} from '../../assets/data/inbox/data'; // <-- SỬA ĐƯỜNG DẪN NẾU CẦN
+} from '../../assets/data/inbox/data';
+import Header, { HEADER_MAX_HEIGHT } from '~/components/ui/rizz/header/Header';
+const AnimatedLegendList = Animated.createAnimatedComponent(LegendList);
 
-// --- Import Header and constants (Đảm bảo đường dẫn chính xác) ---
-import Header, { HEADER_MAX_HEIGHT, ANIMATION_DURATION } from '~/components/ui/rizz/header/Header'; // <-- SỬA ĐƯỜNG DẪN NẾU CẦN
-
-const TRIGGER_THRESHOLD = HEADER_MAX_HEIGHT / 2;
-
-// --- Sub-components ---
 const formatRelativeTime = (isoString: string): string => {
   const now = new Date();
   const date = new Date(isoString);
@@ -39,32 +40,20 @@ const formatRelativeTime = (isoString: string): string => {
   return `${diffInHours}h`;
 };
 
-// SỬA ĐỔI: ActivityItem giờ sẽ sử dụng useTranslation
 const ActivityItem = ({ item }: { item: ActivityItemProps }) => {
   const { t } = useTranslation();
-  const animatedScale = useRef(new Animated.Value(1)).current;
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(animatedScale, { toValue: 0.92, duration: 150, useNativeDriver: true }),
-      Animated.timing(animatedScale, { toValue: 1, duration: 150, useNativeDriver: true }),
-    ]).start();
-  };
-  
-  // Dịch tên nếu id là 'you', ngược lại giữ nguyên tên
   const displayName = item.id === 'you' ? t('you') : item.name;
-
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={1}>
-      <Animated.View style={[screenStyles.activityItem, { transform: [{ scale: animatedScale }] }]}>
+    <TouchableOpacity activeOpacity={0.8}>
+      <View style={screenStyles.activityItem}>
         <View style={screenStyles.activityAvatarWrapper}>
-            <View style={screenStyles.activityGradientBorder}>
-                <Image source={{ uri: item.avatar }} style={screenStyles.activityAvatar} />
-            </View>
-            <View style={screenStyles.activityOnline} />
+          <View style={screenStyles.activityGradientBorder}>
+            <Image source={{ uri: item.avatar }} style={screenStyles.activityAvatar} />
+          </View>
+          <View style={screenStyles.activityOnline} />
         </View>
         <Text style={screenStyles.activityName} numberOfLines={1}>{displayName}</Text>
-      </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -74,33 +63,32 @@ const MessageItem = ({ item, index }: { item: MessageItemProps; index: number })
   const messagePreview = item.lastMessageFromYou ? `${t('you')}: ${item.lastMessage}` : item.lastMessage;
   const isTyping = item.status === 'typing';
   const isOnline = (item as any).isOnline || item.status === 'typing';
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  
+  const animProgress = useSharedValue(0);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, { toValue: 0, duration: 400, delay: index * 50, useNativeDriver: true }),
-      Animated.timing(opacityAnim, { toValue: 1, duration: 400, delay: index * 50, useNativeDriver: true }),
-    ]).start();
+    animProgress.value = withDelay(index * 50, withTiming(1, { duration: 400 }));
   }, []);
 
-  return (
-    <Animated.View style={[screenStyles.messageContainer, { transform: [{ translateX: slideAnim }], opacity: opacityAnim }]}>
-      <TouchableOpacity style={screenStyles.messageRow} activeOpacity={0.7}>
-        {/* Cột Avatar (trái) - Không đổi */}
-        <View style={screenStyles.messageAvatarContainer}>
-            <View style={screenStyles.avatarBorder}>
-                <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
-            </View>
-            {isOnline && <View style={screenStyles.onlineIndicator} />}
-        </View>
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: animProgress.value,
+      transform: [{ translateX: (1 - animProgress.value) * 30 }],
+    };
+  });
 
-        {/* Cột nội dung (giữa) - Giờ chỉ chứa Tên và Preview */}
+  return (
+    <Animated.View style={[screenStyles.messageContainer, animatedStyle]}>
+      <TouchableOpacity style={screenStyles.messageRow} activeOpacity={0.7}>
+        <View style={screenStyles.messageAvatarContainer}>
+          <View style={screenStyles.avatarBorder}>
+            <Image source={{ uri: item.avatar }} style={screenStyles.messageAvatar} />
+          </View>
+          {isOnline && <View style={screenStyles.onlineIndicator} />}
+        </View>
         <View style={screenStyles.messageContent}>
-          {/* SỬA ĐỔI: Header giờ chỉ còn tên người gửi */}
           <View style={screenStyles.messageHeader}>
             <Text style={screenStyles.messageSender} numberOfLines={1}>{item.sender}</Text>
-            {/* <<< Timestamp đã được di chuyển từ đây */}
           </View>
           <View style={screenStyles.messagePreviewContainer}>
             {isTyping && <View style={screenStyles.typingIndicatorContainer}><View style={screenStyles.typingDot} /><View style={[screenStyles.typingDot, { animationDelay: '0.2s' }]} /><View style={[screenStyles.typingDot, { animationDelay: '0.4s' }]} /></View>}
@@ -109,48 +97,34 @@ const MessageItem = ({ item, index }: { item: MessageItemProps; index: number })
             </Text>
           </View>
         </View>
-
-        {/* THÊM MỚI: Cột thông tin (phải) - Chứa Timestamp và Unread Badge */}
         <View style={screenStyles.messageInfoContainer}>
-            <Text style={screenStyles.messageTimestamp}>{formatRelativeTime(item.timestamp)}</Text>
-            {item.unreadCount > 0 && (
-                <View style={screenStyles.unreadBadge}>
-                    <Text style={screenStyles.unreadCount}>
-                        {item.unreadCount > 99 ? '99+' : item.unreadCount}
-                    </Text>
-                </View>
-            )}
+          <Text style={screenStyles.messageTimestamp}>{formatRelativeTime(item.timestamp)}</Text>
+          {item.unreadCount > 0 && (
+            <View style={screenStyles.unreadBadge}>
+              <Text style={screenStyles.unreadCount}>
+                {item.unreadCount > 99 ? '99+' : item.unreadCount}
+              </Text>
+            </View>
+          )}
         </View>
-        
-        {/* <<< View messageRight cũ đã được xóa */}
       </TouchableOpacity>
     </Animated.View>
   );
 };
 
-// --- Main Component ---
 const MessagesScreen = () => {
   const { t, i18n } = useTranslation();
   const [searchText, setSearchText] = useState('');
-  const animation = useRef(new Animated.Value(0)).current;
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const isHeaderCollapsed = useRef(false);
   const flatListRef = useRef<React.ElementRef<typeof LegendList>>(null);
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
 
   const filteredMessages = MESSAGES_DATA.filter(item =>
     item.sender.toLowerCase().includes(searchText.toLowerCase()) ||
     item.lastMessage.toLowerCase().includes(searchText.toLowerCase())
   );
-
-  const toggleHeader = (collapse: boolean) => {
-    if (isHeaderCollapsed.current === collapse) return;
-    isHeaderCollapsed.current = collapse;
-    Animated.timing(animation, {
-      toValue: collapse ? 1 : 0,
-      duration: ANIMATION_DURATION,
-      useNativeDriver: false,
-    }).start();
-  };
 
   const scrollToTop = () => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -161,13 +135,6 @@ const MessagesScreen = () => {
     i18n.changeLanguage(nextLang);
   };
 
-  useEffect(() => {
-    const listenerId = scrollY.addListener(({ value }) => {
-      toggleHeader(value > TRIGGER_THRESHOLD);
-    });
-    return () => scrollY.removeListener(listenerId);
-  }, []);
-
   const renderListHeader = () => (
     <View style={screenStyles.activitiesSection}>
       <View style={screenStyles.sectionHeader}>
@@ -176,9 +143,9 @@ const MessagesScreen = () => {
           <Text style={screenStyles.seeAllText}>{t('seeAll')}</Text>
         </TouchableOpacity>
       </View>
-      <LegendList<ActivityItemProps>
+      <LegendList
         data={ACTIVITIES_DATA}
-        renderItem={({ item }) => <ActivityItem item={item} />}
+        renderItem={({ item }: LegendListRenderItemProps<ActivityItemProps>) => <ActivityItem item={item} />}
         keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -190,7 +157,7 @@ const MessagesScreen = () => {
   return (
     <SafeAreaView style={screenStyles.container}>
       <Header
-        animation={animation} 
+        scrollY={scrollY} 
         title={t('messagesTitle')}
         searchText={searchText}
         onSearchTextChange={setSearchText}
@@ -198,26 +165,24 @@ const MessagesScreen = () => {
         onTitlePress={scrollToTop}
         onLanguageToggle={handleLanguageToggle}
       />
-      <LegendList<MessageItemProps>
+      <AnimatedLegendList
         ref={flatListRef}
         data={filteredMessages}
-        renderItem={({ item, index }) => <MessageItem item={item} index={index} />}
-        keyExtractor={item => item.id}
+        renderItem={({ item, index }: LegendListRenderItemProps<unknown>) => {
+          const messageItem = item as MessageItemProps;
+          return <MessageItem item={messageItem} index={index} />;
+        }}
+        keyExtractor={(item: unknown) => (item as MessageItemProps).id}
         ListHeaderComponent={renderListHeader}
         contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
+        onScroll={scrollHandler} 
         ItemSeparatorComponent={() => <View style={screenStyles.separator} />}
       />
     </SafeAreaView>
   );
 };
 
-// --- Styles ---
 const screenStyles = StyleSheet.create({
-  // ... (giữ nguyên các style từ 'container' đến 'onlineIndicator')
   container: { flex: 1, backgroundColor: '#FFFBF5' },
   activitiesSection: { paddingVertical: 24, backgroundColor: '#FFFFFF', marginBottom: 12, borderRadius: 24, marginHorizontal: 16, marginTop: 16, ...Platform.select({ ios: { shadowColor: '#FF1493', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 16 }, android: { elevation: 8 } }) },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 },
@@ -237,54 +202,17 @@ const screenStyles = StyleSheet.create({
   avatarBorder: { width: 56, height: 56, borderRadius: 28, padding: 2, backgroundColor: '#FF69B4' },
   messageAvatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFF' },
   onlineIndicator: { position: 'absolute', bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: '#00FF7F', borderWidth: 2, borderColor: '#FFFFFF' },
-  
   messageContent: { flex: 1, justifyContent: 'center' },
-
-  // SỬA ĐỔI: messageHeader không cần căn chỉnh nữa
-  messageHeader: { 
-    marginBottom: 6,
-    // Xóa: flexDirection, justifyContent, alignItems
-  },
-
+  messageHeader: { marginBottom: 6 },
   messageSender: { fontSize: 16, fontWeight: '700', color: '#2D2D2D', letterSpacing: -0.2, flex: 1 },
-  
-  // SỬA ĐỔI: timestamp sẽ dùng style cũ của nó nhưng ở vị trí mới
-  messageTimestamp: { 
-    fontSize: 12, 
-    color: '#999999', 
-    fontWeight: '500', 
-    marginBottom: 8, // Thêm khoảng cách với badge bên dưới
-  },
-
+  messageTimestamp: { fontSize: 12, color: '#999999', fontWeight: '500', marginBottom: 8 },
   messagePreviewContainer: { flexDirection: 'row', alignItems: 'center' },
   messagePreview: { fontSize: 14, color: '#666666', lineHeight: 20, letterSpacing: -0.1, flex: 1 },
   typingText: { color: '#FF1493', fontWeight: '600', fontStyle: 'italic' },
   typingIndicatorContainer: { flexDirection: 'row', marginRight: 8 },
   typingDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FF1493', marginHorizontal: 1 },
-
-  // XÓA: messageRight không còn được sử dụng nữa
-
-  // THÊM MỚI: Container cho cột thông tin bên phải
-  messageInfoContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginLeft: 8, // Tạo khoảng cách với cột nội dung
-  },
-  
-  // SỬA ĐỔI: unreadBadge giờ sẽ nằm trong cột thông tin
-  unreadBadge: { 
-    backgroundColor: '#FF1493', 
-    borderRadius: 16, 
-    minWidth: 24, 
-    height: 24, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    paddingHorizontal: 8,
-    // Xóa: marginBottom, borderWidth, borderColor, shadow... (có thể giữ lại nếu muốn hiệu ứng)
-    borderWidth: 2, 
-    borderColor: '#FFFFFF', 
-  },
-  
+  messageInfoContainer: { alignItems: 'flex-end', justifyContent: 'center', marginLeft: 8 },
+  unreadBadge: { backgroundColor: '#FF1493', borderRadius: 16, minWidth: 24, height: 24, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8, borderWidth: 2, borderColor: '#FFFFFF' },
   unreadCount: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', textAlign: 'center' },
   separator: { height: 8, backgroundColor: 'transparent' },
 });
