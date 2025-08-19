@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
 import { Image, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useFonts } from 'expo-font';
 import { Button, ButtonIcon, ButtonText } from '../components/ui/button';
 
 const GoogleIcon = () => (
@@ -33,6 +34,10 @@ const GoogleIcon = () => (
 const PhoneIcon = () => <FontAwesome name="phone" size={30} color={'#FA5EFF'} />;
 
 const SignIn = () => {
+  const [fontsLoaded, fontError] = useFonts({
+    LobsterTwo: require('../assets/font/LobsterTwo-Regular.ttf'),
+  });
+
   const handleContinueWithEmail = () => {
     // Handle email sign in
     console.log('Continue with email pressed');
@@ -53,6 +58,10 @@ const SignIn = () => {
     console.log('Privacy policy pressed');
   };
 
+    if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -72,7 +81,14 @@ const SignIn = () => {
 
         {/* Rizz Title */}
         <View className="mt-10">
-          <Text className="text-center font-lobster-two text-[64px] font-normal leading-[96px] text-[#FA5EFF]">
+         <Text
+            style={{
+              fontFamily: 'LobsterTwo',
+              fontSize: 64,
+              color: '#FA5EFF',
+              textAlign: 'center',
+              lineHeight: 96,
+            }}>
             Rizz
           </Text>
         </View>
