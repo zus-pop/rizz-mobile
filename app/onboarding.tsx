@@ -7,10 +7,10 @@ import { useSharedValue } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-// ***FIX: Sửa lại đường dẫn import sử dụng alias***
-import Section1 from '@/components/onboarding/Section1';
-import Section2 from '@/components/onboarding/Section2';
-import Section3 from '@/components/onboarding/Section3';
+// ***FIX: Thêm lại phần mở rộng file .tsx để đảm bảo trình biên dịch tìm thấy file***
+import Section1 from '../components/onboarding/Section1';
+import Section2 from '../components/onboarding/Section2';
+import Section3 from '../components/onboarding/Section3';
 
 
 // --- PLACEHOLDER CHO COMPONENT TEXT TÙY CHỈNH ---
@@ -31,9 +31,7 @@ const OnBoarding: React.FC = () => {
   
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const mainButtonAnim = useRef(new Animated.Value(0)).current;
-  const { width: windowWidth } = Dimensions.get('window');
-  const buttonRowPadding = 40;
-  const fullButtonWidth = windowWidth - (buttonRowPadding * 2);
+  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
   const finishOnboarding = async () => {
     try {
@@ -64,10 +62,12 @@ const OnBoarding: React.FC = () => {
       Animated.spring(backButtonAnim, {
         toValue: showBackButton ? 1 : 0,
         useNativeDriver: true,
+        tension: 100,
+        friction: 8,
       }),
       Animated.spring(mainButtonAnim, {
         toValue: showBackButton ? 1 : 0,
-        useNativeDriver: false,
+        useNativeDriver: true,
         tension: 80,
         friction: 7,
       })
@@ -94,9 +94,14 @@ const OnBoarding: React.FC = () => {
     outputRange: [0, 50],
   });
   
-  const mainButtonWidth = mainButtonAnim.interpolate({
+  const mainButtonWidthScale = mainButtonAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [fullButtonWidth, fullButtonWidth - 95],
+    outputRange: [1, 0.7],
+  });
+
+  const textScale = mainButtonAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1 / 0.7],
   });
 
   return (
@@ -107,8 +112,8 @@ const OnBoarding: React.FC = () => {
       <Carousel
         ref={ref}
         loop={false}
-        width={Dimensions.get('window').width}
-        height={Dimensions.get('window').height * 0.65}
+        width={windowWidth}
+        height={windowHeight}
         autoPlay={false}
         data={data}
         onProgressChange={progress}
@@ -131,18 +136,7 @@ const OnBoarding: React.FC = () => {
             </Text>
         </View>
 
-        <View style={styles.paginationContainer}>
-          {data.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                currentPage === index && styles.activeDot,
-              ]}
-            />
-          ))}
-        </View>
-
+        {/* Nút bấm và dấu chấm được đặt trong các View riêng với position absolute */}
         <View style={styles.buttonRow}>
             <Animated.View style={[
               styles.backButtonContainer, 
@@ -170,18 +164,30 @@ const OnBoarding: React.FC = () => {
                 <Animated.View style={[
                   styles.buttonWrapper,
                   {
-                    width: mainButtonWidth
+                    transform: [{ scaleX: mainButtonWidthScale }]
                   }
                 ]}>
                     <TouchableOpacity onPress={handleNextPress} style={styles.button}>
-                      <RNText style={styles.buttonText}>
+                      <Animated.Text style={[styles.buttonText, { transform: [{ scaleX: textScale }]}]}>
                         {currentPage === data.length - 1 ? 'Bắt đầu' : 'Tiếp tục'}
-                      </RNText>
-                      <FontAwesome name="heart" size={16} color="white" style={{ marginLeft: 8 }} />
+                      </Animated.Text>
                     </TouchableOpacity>
                 </Animated.View>
             </Animated.View>
         </View>
+        
+        <View style={styles.paginationContainer}>
+          {data.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                currentPage === index && styles.activeDot,
+              ]}
+            />
+          ))}
+        </View>
+
       </View>
     </LinearGradient>
   );
@@ -191,16 +197,16 @@ const styles = StyleSheet.create({
     flex1: { flex: 1 },
     bottomContainer: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 40,
         left: 0,
         right: 0,
-        height: Dimensions.get('window').height * 0.45,
         alignItems: 'center',
         paddingHorizontal: 40,
-        paddingBottom: 50,
+        paddingBottom: 100, // Tăng khoảng đệm để chứa cả nút và dấu chấm
+        zIndex: 1,
     },
     title: {
-        fontSize: 32,
+        fontSize: 64,
         fontWeight: 'bold',
         color: '#FA5EFF', 
         textAlign: 'center',
@@ -216,6 +222,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 20,
         marginTop: 16,
+        marginBottom: 24, // Thêm margin để tách khỏi các control bên dưới
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.6)',
     },
@@ -225,10 +232,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     paginationContainer: {
+        position: 'absolute',
+        bottom: 0, // Đặt ở dưới cùng của bottomContainer
+        left: 0,
+        right: 0,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 24,
     },
     dot: {
         width: 10,
@@ -245,7 +255,7 @@ const styles = StyleSheet.create({
     },
     buttonRow: {
         position: 'absolute',
-        bottom: 0,
+        bottom: 35, // Đẩy hàng nút lên trên các dấu chấm
         left: 40,
         right: 40,
         height: 56,
@@ -267,7 +277,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'row',
     },
-    buttonWrapper: { height: 56 },
+    buttonWrapper: { 
+        height: 56,
+        width: '100%',
+    },
     backButton: {
         height: 56,
         width: 85,

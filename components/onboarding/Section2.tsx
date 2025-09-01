@@ -9,7 +9,6 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 
-// --- DỮ LIỆU ẢNH MỚI CHO 3 HÀNG ---
 const matchImagesCol1 = [
   'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=1887&auto-format&fit=crop',
   'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1887&auto-format&fit=crop',
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
   },
   column: {
       flex: 1,
-      height: '150%', // Cho phép ảnh trượt ra ngoài màn hình
+      height: '150%', 
       marginHorizontal: 4,
   },
   columnImage: {
