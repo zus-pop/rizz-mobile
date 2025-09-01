@@ -1,240 +1,297 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { JSX, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Image, TouchableOpacity, View } from 'react-native';
-import { Extrapolation, interpolate, useSharedValue } from 'react-native-reanimated';
-import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
-import { Text } from '../components/ui/text';
+import React, { type JSX, useEffect, useRef, useState, type RefObject } from 'react';
+import { Animated, Dimensions, TouchableOpacity, View, Text as RNText, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Carousel, { type ICarouselInstance } from 'react-native-reanimated-carousel';
+import { useSharedValue } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
+// ***FIX: Sửa lại đường dẫn import sử dụng alias***
+import Section1 from '@/components/onboarding/Section1';
+import Section2 from '@/components/onboarding/Section2';
+import Section3 from '@/components/onboarding/Section3';
+
+
+// --- PLACEHOLDER CHO COMPONENT TEXT TÙY CHỈNH ---
+const Text = (props: any) => <RNText {...props} />;
+
+// --- DỮ LIỆU CHO CÁC SLIDE ---
 const data = [
-  {
-    id: 'section-1',
-    component: <Section1 />,
-  },
-  {
-    id: 'section-2',
-    component: <Section2 />,
-  },
-  {
-    id: 'section-3',
-    component: <Section3 />,
-  },
+  { id: 'section-1', component: <Section1 /> },
+  { id: 'section-2', component: <Section2 /> },
+  { id: 'section-3', component: <Section3 /> },
 ];
 
-const matchImages = [
-  'https://cdn.builder.io/api/v1/image/assets/TEMP/6aa270fe09382d4314733d886b1a8124655a8a84?width=400',
-  'https://cdn.builder.io/api/v1/image/assets/TEMP/eb91facca97c5b42a780220d800b7b7242e54cd6?width=470',
-  'https://cdn.builder.io/api/v1/image/assets/TEMP/d50fd443d2629ca8bd590e3e2cbdfc2979c2486d?width=400',
-  'https://cdn.builder.io/api/v1/image/assets/TEMP/6aa270fe09382d4314733d886b1a8124655a8a84?width=400',
-  'https://cdn.builder.io/api/v1/image/assets/TEMP/eb91facca97c5b42a780220d800b7b7242e54cd6?width=470',
-];
-
+// --- COMPONENT CHÍNH CHO MÀN HÌNH ONBOARDING ---
 const OnBoarding: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
+  
+  const backButtonAnim = useRef(new Animated.Value(0)).current;
+  const mainButtonAnim = useRef(new Animated.Value(0)).current;
+  const { width: windowWidth } = Dimensions.get('window');
+  const buttonRowPadding = 40;
+  const fullButtonWidth = windowWidth - (buttonRowPadding * 2);
 
-  const onPressPagination = (index: number) => {
-    ref.current?.scrollTo({
-      count: index - progress.value,
-      animated: true,
-    });
+  const finishOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem('@hasSeenWelcomeScreen', 'true');
+      router.replace('/(tabs)');
+    } catch (e) {
+      console.error("Lỗi khi lưu trạng thái màn hình chào mừng.", e);
+      router.replace('/(tabs)');
+    }
+  };
+  
+  const handleNextPress = () => {
+    if (currentPage < data.length - 1) {
+      ref.current?.next();
+    } else {
+      finishOnboarding();
+    }
   };
 
-  const handleGetStarted = () => {
-    router.replace('/signin');
+  const handleBackPress = () => {
+      ref.current?.prev();
   };
+
+  useEffect(() => {
+    const showBackButton = currentPage > 0;
+    
+    Animated.parallel([
+      Animated.spring(backButtonAnim, {
+        toValue: showBackButton ? 1 : 0,
+        useNativeDriver: true,
+      }),
+      Animated.spring(mainButtonAnim, {
+        toValue: showBackButton ? 1 : 0,
+        useNativeDriver: false,
+        tension: 80,
+        friction: 7,
+      })
+    ]).start();
+  }, [currentPage]);
+
+  const backButtonTransform = backButtonAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [120, 60, 0],
+  });
+
+  const backButtonScale = backButtonAnim.interpolate({
+    inputRange: [0, 0.4, 0.8, 1],
+    outputRange: [0, 1.3, 0.9, 1],
+  });
+
+  const backButtonRotate = backButtonAnim.interpolate({
+    inputRange: [0, 0.3, 0.7, 1],
+    outputRange: ['0deg', '-8deg', '4deg', '0deg'],
+  });
+
+  const mainButtonTransform = mainButtonAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 50],
+  });
+  
+  const mainButtonWidth = mainButtonAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [fullButtonWidth, fullButtonWidth - 95],
+  });
 
   return (
     <LinearGradient
       colors={['#FEC5D7', 'rgba(255, 229, 0, 0.55)']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      locations={currentPage === 0 ? [0.4381, 0.9998] : [0, 1]}
-      className="flex-1">
-      <View>
-        <Carousel
-          ref={ref}
-          loop
-          autoPlay
-          width={Dimensions.get('window').width}
-          onProgressChange={progress}
-          snapEnabled
-          withAnimation={{
-            type: 'timing',
-            config: {
-              duration: 1500,
-            },
-          }}
-          autoPlayInterval={3000}
-          height={Dimensions.get('window').height * 0.8}
-          style={{ zIndex: 100 }}
-          pagingEnabled
-          data={data}
-          onSnapToItem={(index) => {
-            setCurrentPage(index);
-          }}
-          renderItem={({ item }) => item.component}
-        />
-      </View>
-
-      <Pagination.Custom<{ id: string; component: JSX.Element }>
-        progress={progress}
+      locations={[0.4, 1]}
+      style={styles.flex1}>
+      <Carousel
+        ref={ref}
+        loop={false}
+        width={Dimensions.get('window').width}
+        height={Dimensions.get('window').height * 0.65}
+        autoPlay={false}
         data={data}
-        size={10}
-        dotStyle={{ backgroundColor: '#ffffff', borderRadius: 16 }}
-        activeDotStyle={{
-          overflow: 'hidden',
-          backgroundColor: '#FA5EFF',
-          borderRadius: 8,
-          width: 15,
-          height: 15,
-        }}
-        containerStyle={{ gap: 5, marginBottom: 10, alignItems: 'center', height: 10 }}
-        horizontal
-        onPress={onPressPagination}
-        customReanimatedStyle={(progress, index, length) => {
-          let val = Math.abs(progress - index);
-          if (index === 0 && progress > length - 1) {
-            val = Math.abs(progress - length);
-          }
-
-          return {
-            transform: [
-              {
-                translateY: interpolate(val, [0, 1], [0, 0], Extrapolation.CLAMP),
-              },
-            ],
-          };
-        }}
+        onProgressChange={progress}
+        onSnapToItem={(index) => setCurrentPage(index)}
+        renderItem={({ item }) => item.component}
       />
 
-      {/* Fixed Content Section at Bottom */}
-      <View className="absolute bottom-[170px] left-0 right-0">
-        {/* Centered Title */}
-        <View className="mb-8 items-center">
-          <Text
-            size="5xl"
-            className={`text-center font-roboto font-bold text-[#FA5EFF] ${
-              currentPage === 0 ? 'font-lobster-two leading-[72px]' : 'leading-9'
-            }`}>
-            {currentPage === 0 && 'Rizz'}
-            {currentPage === 1 && 'Matches'}
-            {currentPage === 2 && 'Premium'}
-          </Text>
+      <View style={styles.bottomContainer}>
+        <Text style={[styles.title, currentPage === 0 && styles.titleRizz]}>
+          {currentPage === 0 && 'Rizz'}
+          {currentPage === 1 && 'Matches'}
+          {currentPage === 2 && 'Premium'}
+        </Text>
+
+        <View style={styles.descriptionContainer}>
+            <Text style={styles.description}>
+              {currentPage === 0 && 'Users going through a vetting process to ensure you never match with bots.'}
+              {currentPage === 1 && 'We match you with people that have a large array of similar interests.'}
+              {currentPage === 2 && 'Sign up today and try premium for free on 3 days'}
+            </Text>
         </View>
 
-        {/* Description Text */}
-        <View className="px-10">
-          <Text
-            size="lg"
-            className="mb-4 text-center font-roboto font-normal leading-5 text-[#323755]">
-            {currentPage === 0 &&
-              'Users going through a vetting process to ensure you never match with bots.'}
-            {currentPage === 1 &&
-              'We match you with people that have a large array of similar interests.'}
-            {currentPage === 2 && 'Sign up today and try premium for free on 3 days'}
-          </Text>
+        <View style={styles.paginationContainer}>
+          {data.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                currentPage === index && styles.activeDot,
+              ]}
+            />
+          ))}
         </View>
-      </View>
 
-      {/* Getting Started Button */}
-      <View className="absolute bottom-[70px] left-[40px] right-[40px]">
-        <TouchableOpacity
-          onPress={handleGetStarted}
-          className="mx-auto h-14 w-[295px] items-center justify-center rounded-2xl bg-[#FA5EFF]">
-          <Text className="text-center font-roboto text-base font-bold leading-6 text-white">
-            Getting start
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+            <Animated.View style={[
+              styles.backButtonContainer, 
+              {
+                transform: [
+                  { translateX: backButtonTransform },
+                  { scale: backButtonScale },
+                  { rotate: backButtonRotate }
+                ],
+                opacity: backButtonAnim
+              }
+            ]}>
+                {currentPage > 0 && (
+                    <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                        <FontAwesome name="arrow-left" size={20} color="#323755" />
+                    </TouchableOpacity>
+                )}
+            </Animated.View>
+            <Animated.View style={[
+              styles.mainButtonContainer, 
+              {
+                transform: [{ translateX: mainButtonTransform }]
+              }
+            ]}>
+                <Animated.View style={[
+                  styles.buttonWrapper,
+                  {
+                    width: mainButtonWidth
+                  }
+                ]}>
+                    <TouchableOpacity onPress={handleNextPress} style={styles.button}>
+                      <RNText style={styles.buttonText}>
+                        {currentPage === data.length - 1 ? 'Bắt đầu' : 'Tiếp tục'}
+                      </RNText>
+                      <FontAwesome name="heart" size={16} color="white" style={{ marginLeft: 8 }} />
+                    </TouchableOpacity>
+                </Animated.View>
+            </Animated.View>
+        </View>
       </View>
     </LinearGradient>
   );
 };
 
-function Section1() {
-  return (
-    <View className="relative w-screen">
-      <Image
-        source={{
-          uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/630f9fab99a7a312cbbaa6b8172ac9becf4499dd?width=1760',
-        }}
-        className="top-[44px] h-[400px] w-full"
-        resizeMode="cover"
-      />
-    </View>
-  );
-}
+const styles = StyleSheet.create({
+    flex1: { flex: 1 },
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 50,
+        left: 0,
+        right: 0,
+        height: Dimensions.get('window').height * 0.45,
+        alignItems: 'center',
+        paddingHorizontal: 40,
+        paddingBottom: 50,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#FA5EFF', 
+        textAlign: 'center',
+    },
+    titleRizz: {
+        fontFamily: 'LobsterTwo',
+        fontSize: 64,
+        color: '#FA5EFF',
+    },
+    descriptionContainer: {
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        marginTop: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.6)',
+    },
+    description: {
+        fontSize: 16,
+        color: '#374151',
+        textAlign: 'center',
+    },
+    paginationContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 24,
+    },
+    dot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'white',
+        marginHorizontal: 4,
+    },
+    activeDot: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#FA5EFF',
+    },
+    buttonRow: {
+        position: 'absolute',
+        bottom: 0,
+        left: 40,
+        right: 40,
+        height: 56,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    backButtonContainer: {
+        position: 'absolute',
+        left: 0,
+        height: 56,
+        width: 85,
+        zIndex: 1,
+    },
+    mainButtonContainer: {
+        height: 56,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    buttonWrapper: { height: 56 },
+    backButton: {
+        height: 56,
+        width: 85,
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 16,
+    },
+    button: {
+        width: '100%',
+        height: 56,
+        backgroundColor: '#FA5EFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 16,
+        marginLeft: 0,
+        flexDirection: 'row',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+});
 
-function Section2() {
-  const progress = useSharedValue<number>(0);
-  const ref = React.useRef<ICarouselInstance>(null);
-  const width = Dimensions.get('window').width;
-  const height = Dimensions.get('window').height;
-
-  useEffect(() => {
-    if (ref.current) {
-      const interval = setInterval(() => {
-        ref.current?.next({ animated: true });
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, []);
-
-  return (
-    <Carousel
-      enabled={false}
-      snapEnabled={false}
-      ref={ref}
-      data={matchImages}
-      style={{ marginTop: 8, width: width, alignContent: 'center', justifyContent: 'center' }}
-      width={width * 0.8}
-      height={height * 0.5}
-      loop
-      mode="parallax"
-      modeConfig={{
-        parallaxScrollingScale: 0.9,
-        parallaxScrollingOffset: 50,
-      }}
-      withAnimation={{
-        type: 'timing',
-        config: {
-          duration: 1200,
-        },
-      }}
-      onProgressChange={progress}
-      renderItem={({ item }) => (
-        <View
-          className="flex-1 items-center justify-start"
-          style={{
-            borderRadius: 10,
-          }}>
-          <Animated.Image
-            source={{ uri: item }}
-            className="rounded-2xl"
-            style={{
-              width: width * 0.7,
-              height: height * 0.5,
-            }}
-            resizeMode="cover"
-          />
-        </View>
-      )}
-    />
-  );
-}
-
-function Section3() {
-  return (
-    <View className="relative w-screen">
-      <Image
-        source={{
-          uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/ffceb197d576fcb9709758d4455cfe9ea6e10e18?width=836',
-        }}
-        className="absolute left-[-20px] top-[80px] h-[418px] w-[418px]"
-        resizeMode="cover"
-      />
-    </View>
-  );
-}
 export default OnBoarding;
+

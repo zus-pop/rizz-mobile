@@ -11,7 +11,7 @@ export default function Home() {
       
       // Điều hướng người dùng quay trở lại màn hình welcome
       // Dùng 'replace' để ngăn người dùng quay lại màn hình Home bằng nút back
-      router.replace('/welcome');
+      router.replace('/onboarding');
     } catch (e) {
       console.error("Lỗi khi reset màn hình chào mừng.", e);
       Alert.alert("Lỗi", "Không thể thực hiện thao tác này.");

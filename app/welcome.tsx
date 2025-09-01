@@ -1,9 +1,25 @@
 import { router } from 'expo-router';
 import React, { JSX, useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, Image, TouchableOpacity, View, Text as RNText, StyleSheet } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Image,
+  TouchableOpacity,
+  View,
+  Text as RNText,
+  StyleSheet,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
-import { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, interpolate, withSpring } from 'react-native-reanimated';
+import {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  interpolate,
+  withSpring,
+} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -30,7 +46,7 @@ const OnBoarding: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
-  
+
   // Dùng Animated thay vì Reanimated cho performance tốt hơn trên máy ảo
   const backButtonAnim = useRef(new Animated.Value(0)).current;
   const mainButtonAnim = useRef(new Animated.Value(0)).current;
@@ -40,11 +56,11 @@ const OnBoarding: React.FC = () => {
       await AsyncStorage.setItem('@hasSeenWelcomeScreen', 'true');
       router.replace('/(tabs)');
     } catch (e) {
-      console.error("Lỗi khi lưu trạng thái màn hình chào mừng.", e);
+      console.error('Lỗi khi lưu trạng thái màn hình chào mừng.', e);
       router.replace('/(tabs)');
     }
   };
-  
+
   const handleNextPress = () => {
     if (currentPage < data.length - 1) {
       ref.current?.next();
@@ -54,13 +70,13 @@ const OnBoarding: React.FC = () => {
   };
 
   const handleBackPress = () => {
-      ref.current?.prev();
+    ref.current?.prev();
   };
 
   useEffect(() => {
     // Animation mượt mà hơn với Animated API
     const showBackButton = currentPage > 0;
-    
+
     // Animation cho nút back với elastic effect
     Animated.parallel([
       Animated.spring(backButtonAnim, {
@@ -68,15 +84,15 @@ const OnBoarding: React.FC = () => {
         useNativeDriver: true,
         tension: 100,
         friction: 8,
-        delay: showBackButton ? 100 : 0, // Delay khi hiện
+        // delay: showBackButton ? 100 : 0,
       }),
       Animated.spring(mainButtonAnim, {
         toValue: showBackButton ? 1 : 0,
         useNativeDriver: true,
         tension: 80,
         friction: 7,
-        delay: showBackButton ? 50 : 0, // Delay khác nhau để tạo hiệu ứng sóng
-      })
+        // delay: showBackButton ? 50 : 0,
+      }),
     ]).start();
   }, [currentPage]);
 
@@ -102,14 +118,16 @@ const OnBoarding: React.FC = () => {
     outputRange: [0, 50], // Giảm translateX để không bị đẩy quá xa
   });
 
-  // Không dùng squeeze effect nữa để tránh conflict
-  const mainButtonScale = 1;
-
-  // Scale để thu nhỏ nút chính khi nút back xuất hiện  
+  // Scale để thu nhỏ nút chính khi nút back xuất hiện
   const mainButtonWidthScale = mainButtonAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.7], // Thu nhỏ xuống 70% thay vì 65%
+    outputRange: [1, 0.7],
   });
+
+  //  const textScale = mainButtonAnim.interpolate({
+  //   inputRange: [0, 1],
+  //   outputRange: [1, 1 / 0.7], // Scale ngược để giữ nguyên kích thước
+  // });
 
   return (
     <LinearGradient
@@ -136,56 +154,70 @@ const OnBoarding: React.FC = () => {
         </Text>
 
         <Text style={styles.description}>
-          {currentPage === 0 && 'Users going through a vetting process to ensure you never match with bots.'}
-          {currentPage === 1 && 'We match you with people that have a large array of similar interests.'}
+          {currentPage === 0 &&
+            'Users going through a vetting process to ensure you never match with bots.'}
+          {currentPage === 1 &&
+            'We match you with people that have a large array of similar interests.'}
           {currentPage === 2 && 'Sign up today and try premium for free on 3 days'}
         </Text>
 
-        <Pagination.Basic
+        {/* <Pagination.Basic
             progress={progress}
             data={data}
             dotStyle={styles.dot}
             activeDotStyle={styles.activeDot}
             containerStyle={styles.paginationContainer}
-        />
+        /> */}
+        <View style={styles.paginationContainer}>
+          {data.map((_, index) => (
+            <View
+              key={index}
+
+              style={[styles.dot, currentPage === index && styles.activeDot]}
+            />
+          ))}
+        </View>
 
         <View style={styles.buttonRow}>
-            <Animated.View style={[
-              styles.backButtonContainer, 
+          <Animated.View
+            style={[
+              styles.backButtonContainer,
               {
                 transform: [
                   { translateX: backButtonTransform },
                   { scale: backButtonScale },
-                  { rotate: backButtonRotate }
+                  { rotate: backButtonRotate },
                 ],
-                opacity: backButtonAnim
-              }
+                opacity: backButtonAnim,
+              },
             ]}>
-                {currentPage > 0 && (
-                    <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-                        <FontAwesome name="arrow-left" size={20} color="#323755" />
-                    </TouchableOpacity>
-                )}
-            </Animated.View>
-            <Animated.View style={[
-              styles.mainButtonContainer, 
+            {currentPage > 0 && (
+              <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                <FontAwesome name="arrow-left" size={20} color="#323755" />
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+          <Animated.View
+            style={[
+              styles.mainButtonContainer,
               {
-                transform: [{ translateX: mainButtonTransform }]
-              }
+                transform: [{ translateX: mainButtonTransform }],
+              },
             ]}>
-                <Animated.View style={[
-                  styles.buttonWrapper,
-                  {
-                    transform: [{ scaleX: mainButtonWidthScale }]
-                  }
-                ]}>
-                    <TouchableOpacity onPress={handleNextPress} style={styles.button}>
-                      <RNText style={styles.buttonText}>
-                        {currentPage === data.length - 1 ? 'Bắt đầu' : 'Tiếp tục'}
-                      </RNText>
-                    </TouchableOpacity>
-                </Animated.View>
+            <Animated.View
+              style={[
+                styles.buttonWrapper,
+                {
+                  transform: [{ scaleX: mainButtonWidthScale }],
+                },
+              ]}>
+              <TouchableOpacity onPress={handleNextPress} style={styles.button}>
+                <RNText style={styles.buttonText}>
+                  {currentPage === data.length - 1 ? 'Bắt đầu' : 'Tiếp tục'}
+                </RNText>
+              </TouchableOpacity>
             </Animated.View>
+          </Animated.View>
         </View>
       </View>
     </LinearGradient>
@@ -194,25 +226,27 @@ const OnBoarding: React.FC = () => {
 
 // --- CÁC SECTION RIÊNG BIỆT VỚI HIỆU ỨNG ĐỘNG ---
 function Section1() {
-    const scale = useSharedValue(1);
+  const scale = useSharedValue(1);
 
-    useEffect(() => {
-        scale.value = withRepeat(withTiming(1.05, { duration: 1500 }), -1, true);
-    }, []);
+  useEffect(() => {
+    scale.value = withRepeat(withTiming(1.05, { duration: 1500 }), -1, true);
+  }, []);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
-    }));
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   return (
     <View style={styles.sectionContainer}>
-        <Animated.View style={animatedStyle}>
-            <Image
-                source={{ uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/630f9fab99a7a312cbbaa6b8172ac9becf4499dd?width=1760' }}
-                style={styles.section1Image}
-                resizeMode="contain"
-            />
-        </Animated.View>
+      <Animated.View style={animatedStyle}>
+        <Image
+          source={{
+            uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/630f9fab99a7a312cbbaa6b8172ac9becf4499dd?width=1760',
+          }}
+          style={styles.section1Image}
+          resizeMode="contain"
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -235,9 +269,21 @@ function Section2() {
                 width={width * 0.75}
                 height={width * 0.9}
                 autoPlay={true}
-                autoPlayInterval={2500}
+                autoPlayInterval={0}
                 data={matchImages}
-                scrollAnimationDuration={1200}
+                withAnimation={{
+                    type: 'timing',
+                    config: {
+                        // ***FIX: Đánh dấu hàm là một 'worklet' để chạy trên UI thread***
+                        easing: (t) => {
+                            'worklet';
+                            return t;
+                        }, 
+                        duration: 400,
+                    },
+                }}
+                scrollAnimationDuration={400}
+                enabled={false}
                 renderItem={({ item }) => (
                     <View style={styles.filmFrame}>
                         <Image
@@ -257,175 +303,174 @@ function Section2() {
 }
 
 function Section3() {
-    const translateY = useSharedValue(0);
+  const translateY = useSharedValue(0);
 
-    useEffect(() => {
-        translateY.value = withRepeat(
-            withSequence(
-                withTiming(-10, { duration: 2000 }),
-                withTiming(10, { duration: 2000 })
-            ),
-            -1,
-            true
-        );
-    }, []);
+  useEffect(() => {
+    translateY.value = withRepeat(
+      withSequence(withTiming(-10, { duration: 2000 }), withTiming(10, { duration: 2000 })),
+      -1,
+      true
+    );
+  }, []);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: translateY.value }],
-    }));
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
     <View style={styles.sectionContainer}>
-        <Animated.View style={animatedStyle}>
-            <Image
-                source={{ uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/ffceb197d576fcb9709758d4455cfe9ea6e10e18?width=836' }}
-                style={styles.section3Image}
-                resizeMode="contain"
-            />
-        </Animated.View>
+      <Animated.View style={animatedStyle}>
+        <Image
+          source={{
+            uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/ffceb197d576fcb9709758d4455cfe9ea6e10e18?width=836',
+          }}
+          style={styles.section3Image}
+          resizeMode="contain"
+        />
+      </Animated.View>
     </View>
   );
 }
 
 // --- STYLES ---
 const styles = StyleSheet.create({
-    flex1: { flex: 1 },
-    bottomContainer: {
-        position: 'absolute',
-        bottom: 50,
-        left: 0,
-        right: 0,
-        height: Dimensions.get('window').height * 0.45,
-        alignItems: 'center',
-        paddingHorizontal: 40,
-        paddingBottom: 50, // Thêm padding bottom để nút không sát đáy
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#323755',
-        textAlign: 'center',
-    },
-    titleRizz: {
-        fontFamily: 'LobsterTwo',
-        fontSize: 64,
-        color: '#FA5EFF',
-    },
-    description: {
-        fontSize: 16,
-        color: '#323755',
-        textAlign: 'center',
-        marginTop: 16,
-    },
-    paginationContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 24,
-    },
-    dot: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: 'white',
-        marginHorizontal: 4,
-    },
-    activeDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#FA5EFF',
-    },
-    buttonRow: {
-        position: 'absolute',
-        bottom: 0,
-        left: 40,
-        right: 40,
-        height: 56,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between', // Thay đổi từ center thành space-between
-    },
-    backButtonContainer: {
-        position: 'absolute',
-        left: 0,
-        height: 56,
-        width: 85,
-        zIndex: 1,
-    },
-    mainButtonContainer: {
-        height: 56,
-        width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center', // Thay đổi từ flex-end thành center
-        flexDirection: 'row',
-    },
-    buttonWrapper: {
-        height: 56,
-        width: '100%', // Fixed width, sẽ dùng scaleX để thu nhỏ
-    },
-    backButton: {
-        height: 56,
-        width: 85,
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 16,
-    },
-    button: {
-        width: '100%',
-        height: 56,
-        backgroundColor: '#FA5EFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 16,
-        marginLeft: 0, // Đảm bảo không có margin
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    sectionContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: Dimensions.get('window').width,
-    },
-    section1Image: {
-        width: Dimensions.get('window').width * 0.8,
-        height: Dimensions.get('window').width * 0.8,
-    },
-    filmStripContainer: {
-        backgroundColor: 'rgba(0,0,0,0.1)',
-        paddingVertical: 10,
-        borderRadius: 5,
-    },
-    sprocketRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingHorizontal: 10,
-    },
-    sprocket: {
-        width: 10,
-        height: 10,
-        backgroundColor: 'rgba(255,255,255,0.5)',
-        borderRadius: 2,
-    },
-    filmFrame: {
-        padding: 10,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    matchImage: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 15,
-    },
-    section3Image: {
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').width,
-    }
+  flex1: { flex: 1 },
+  bottomContainer: {
+    position: 'absolute',
+    bottom: 50,
+    left: 0,
+    right: 0,
+    height: Dimensions.get('window').height * 0.45,
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 50, // Thêm padding bottom để nút không sát đáy
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#323755',
+    textAlign: 'center',
+  },
+  titleRizz: {
+    fontFamily: 'LobsterTwo',
+    fontSize: 64,
+    color: '#FA5EFF',
+  },
+  description: {
+    fontSize: 16,
+    color: '#323755',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'white',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FA5EFF',
+  },
+  buttonRow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 40,
+    right: 40,
+    height: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Thay đổi từ center thành space-between
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    left: 0,
+    height: 56,
+    width: 85,
+    zIndex: 1,
+  },
+  mainButtonContainer: {
+    height: 56,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center', // Thay đổi từ flex-end thành center
+    flexDirection: 'row',
+  },
+  buttonWrapper: {
+    height: 56,
+    width: '100%', // Fixed width, sẽ dùng scaleX để thu nhỏ
+  },
+  backButton: {
+    height: 56,
+    width: 85,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  button: {
+    width: '100%',
+    height: 56,
+    backgroundColor: '#FA5EFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    marginLeft: 0, // Đảm bảo không có margin
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  sectionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: Dimensions.get('window').width,
+  },
+  section1Image: {
+    width: Dimensions.get('window').width * 0.8,
+    height: Dimensions.get('window').width * 0.8,
+  },
+  filmStripContainer: {
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  sprocketRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+  },
+  sprocket: {
+    width: 10,
+    height: 10,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 2,
+  },
+  filmFrame: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  matchImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
+  },
+  section3Image: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').width,
+  },
 });
 
 export default OnBoarding;
