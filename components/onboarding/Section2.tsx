@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Image, StyleSheet, Dimensions, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,24 +18,24 @@ const matchImagesCol1 = [
 ];
 
 const matchImagesCol2 = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto-format&fit=crop',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1887&auto-format&fit=crop',
-  'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1923&auto-format&fit=crop',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto-format&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=1887&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1923&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1756475394041-53bd65722fac?q=80&w=1227&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 ];
 
 const matchImagesCol3 = [
-    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto-format&fit=crop',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1887&auto-format&fit=crop',
-    'https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1899&auto-format&fit=crop',
-    'https://images.unsplash.com/photo-1756408263381-ed1488d9b1ea?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://images.unsplash.com/photo-1756456386209-2c83bab17506?q=80&w=2224&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1887&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1552058544-f2b08422138a?q=80&w=1899&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1756408263381-ed1488d9b1ea?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1756456386209-2c83bab17506?q=80&w=2224&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 ];
 
 const matchImagesCol4 = [
-  'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto-format&fit=crop',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto-format&fit=crop',
+  'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1756416604444-2cd4acdb7bd9?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 ];
 
@@ -43,51 +43,68 @@ const matchImagesCol4 = [
 const IMAGE_HEIGHT = 200;
 const DURATION = 18000;
 
-// --- COMPONENT CON MỚI ĐỂ TẠO CỘT TRƯỢT DỌC ---
+// --- COMPONENT CON ĐỂ TẠO CỘT TRƯỢT DỌC ---
 const MarqueeColumn = ({ images, reverse = false }: { images: string[], reverse?: boolean }) => {
-    const totalHeight = images.length * (IMAGE_HEIGHT + 8); // Cộng thêm margin
-    const translateY = useSharedValue(0);
+  const totalHeight = images.length * (IMAGE_HEIGHT + 8);
+  const translateY = useSharedValue(0);
 
-    useEffect(() => {
-        const fromValue = reverse ? -totalHeight : 0;
-        const toValue = reverse ? 0 : -totalHeight;
+  useEffect(() => {
+    const fromValue = reverse ? -totalHeight : 0;
+    const toValue = reverse ? 0 : -totalHeight;
 
-        translateY.value = fromValue;
-        translateY.value = withRepeat(
-            withTiming(toValue, { duration: DURATION, easing: Easing.linear }),
-            -1
-        );
-        return () => cancelAnimation(translateY);
-    }, [images, reverse, totalHeight]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: translateY.value }],
-    }));
-
-    return (
-        <View style={styles.column}>
-            <Animated.View style={animatedStyle}>
-                {[...images, ...images].map((uri, index) => (
-                    <Image key={`marquee-item-${index}-${uri}`} source={{ uri }} style={styles.columnImage} />
-                ))}
-            </Animated.View>
-        </View>
+    translateY.value = fromValue;
+    translateY.value = withRepeat(
+      withTiming(toValue, { duration: DURATION, easing: Easing.linear }),
+      -1
     );
+    return () => cancelAnimation(translateY);
+  }, [images, reverse, totalHeight]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return (
+    <View style={styles.column}>
+      <Animated.View style={animatedStyle}>
+        {[...images, ...images].map((uri, index) => (
+          <Image key={`marquee-item-${index}-${uri}`} source={{ uri }} style={styles.columnImage} />
+        ))}
+      </Animated.View>
+    </View>
+  );
 };
 
 // --- COMPONENT SECTION 2 CHÍNH ---
 function Section2() {
   return (
-    <View style={styles.sectionContainer}>
+    <View style={styles.container}>
+      {/* Phần hình ảnh */}
+      <View style={styles.sectionContainer}>
         <MarqueeColumn images={matchImagesCol1} />
         <MarqueeColumn images={matchImagesCol2} reverse={true} />
         <MarqueeColumn images={matchImagesCol3} />
         <MarqueeColumn images={matchImagesCol4} reverse={true} />
+      </View>
+
+      {/* Phần nội dung text */}
+      <View style={styles.bottomContainer}>
+        <Text style={styles.title}>Matches</Text>
+        
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>
+            We match you with people that have a large array of similar interests.
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   sectionContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -96,9 +113,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   column: {
-      flex: 1,
-      height: '150%', 
-      marginHorizontal: 4,
+    flex: 1,
+    height: '150%',
+    marginHorizontal: 4,
   },
   columnImage: {
     width: '100%',
@@ -106,7 +123,35 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
   },
+  bottomContainer: {
+    position: 'absolute',
+    bottom: 160, // Đặt cao hơn để không bị che bởi buttons
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    zIndex: 1,
+  },
+  title: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#FA5EFF',
+    textAlign: 'center',
+  },
+  descriptionContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+  },
+  description: {
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'center',
+  },
 });
 
 export default Section2;
-
