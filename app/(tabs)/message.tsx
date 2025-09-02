@@ -25,6 +25,7 @@ import {
   MessageItemProps,
   ActivityItemProps,
 } from '../../assets/data/inbox/data';
+import { Link } from 'expo-router';
 import Header, { HEADER_MAX_HEIGHT } from '~/components/ui/rizz/header/Header';
 const AnimatedLegendList = Animated.createAnimatedComponent(LegendList);
 
@@ -79,6 +80,7 @@ const MessageItem = ({ item, index }: { item: MessageItemProps; index: number })
 
   return (
     <Animated.View style={[screenStyles.messageContainer, animatedStyle]}>
+      <Link href={`/chat/${item.id}`} asChild> 
       <TouchableOpacity style={screenStyles.messageRow} activeOpacity={0.7}>
         <View style={screenStyles.messageAvatarContainer}>
           <View style={screenStyles.avatarBorder}>
@@ -108,6 +110,7 @@ const MessageItem = ({ item, index }: { item: MessageItemProps; index: number })
           )}
         </View>
       </TouchableOpacity>
+      </Link>
     </Animated.View>
   );
 };
