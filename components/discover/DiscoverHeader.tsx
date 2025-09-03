@@ -20,7 +20,7 @@ const DiscoverHeader = ({ onFilterPress, title }: DiscoverHeaderProps) => {
           padding: 6,
           overflow: 'hidden',
         }}>
-        <Ionicons name="game-controller" size={30} color="#FA5EFF" />
+        <Ionicons name="game-controller" size={35} color="#FA5EFF" />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => console.log('Text pressed')}>
         <Text size="3xl" className="font-bold text-black">
@@ -35,7 +35,7 @@ const DiscoverHeader = ({ onFilterPress, title }: DiscoverHeaderProps) => {
           padding: 6,
           overflow: 'hidden',
         }}>
-        <MaterialCommunityIcons name="air-filter" size={30} color="#FA5EFF" />
+        <MaterialCommunityIcons name="air-filter" size={35} color="#FA5EFF" />
       </TouchableOpacity>
     </View>
   );

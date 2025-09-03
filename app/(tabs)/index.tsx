@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/bottom-sheet';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
-import { getHeaderTitle } from '@react-navigation/elements';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useCallback, useMemo, useRef } from 'react';
@@ -80,16 +79,12 @@ export default function Discover() {
       <Stack.Screen
         options={{
           title: 'Discover',
-          header: ({ navigation, route, options }) => {
-            const title = getHeaderTitle(options, route.name);
-
-            return <DiscoverHeader title={title} onFilterPress={handlePresentFilterSheet} />;
-          },
-          headerTransparent: true,
+          headerShown: false,
         }}
       />
+      <DiscoverHeader title="Discover" onFilterPress={handlePresentFilterSheet} />
       <View
-        className="-bottom-10 z-10 shadow-md shadow-black/50"
+        className="-top-5 z-10 shadow-md shadow-black/50"
         style={styles.container}
         pointerEvents="box-none">
         {soulmates.map((item, index) => (
@@ -131,7 +126,8 @@ export default function Discover() {
         />
         <SwipeButton
           onPress={() => {
-            swipeDirection.value = 'right';
+            // swipeDirection.value = 'right';
+            handlePresentFilterSheet();
           }}
           className="h-20 w-20 bg-white shadow-md shadow-purple-400"
           icon={<Entypo size={swipeButtonActionSize} name="heart" color={'#c084fc'} />}

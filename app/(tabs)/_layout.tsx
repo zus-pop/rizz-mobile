@@ -10,18 +10,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: 'pink',
         tabBarShowLabel: false,
         animation: 'fade',
-        // tabBarStyle: {
-        //   position: 'absolute',
-        //   height: 200,
-        //   backgroundColor: 'transparent',
-        //   elevation: 0,
-        //   shadowOpacity: 0,
-        // },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          headerTransparent: true,
+          headerShown: false,
         }}
       />
       <Tabs.Screen
