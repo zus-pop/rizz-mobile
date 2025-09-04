@@ -6,6 +6,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  useAnimatedReaction,
 } from 'react-native-reanimated';
 
 interface AnimatedSwitchProps {
@@ -25,24 +26,39 @@ export default function AnimatedSwitch({
 }: AnimatedSwitchProps) {
   const height = useSharedValue(0);
   const width = useSharedValue(0);
+  const animatedValue = useSharedValue(0); // Start with 0, let useAnimatedReaction handle initial value
+
+  // React to value changes and animate accordingly
+  useAnimatedReaction(
+    () => value.value,
+    (newValue, prevValue) => {
+      // On first run (prevValue is null), set immediately without animation
+      if (prevValue === null) {
+        animatedValue.value = newValue ? 1 : 0;
+      } else {
+        animatedValue.value = withTiming(newValue ? 1 : 0, { duration });
+      }
+    },
+    [duration] // Add dependencies to avoid stale closures
+  );
 
   const trackAnimatedStyle = useAnimatedStyle(() => {
-    const color = interpolateColor(value.value ? 1 : 0, [0, 1], [trackColors.off, trackColors.on]);
-    const colorValue = withTiming(color, { duration });
+    const color = interpolateColor(animatedValue.value, [0, 1], [trackColors.off, trackColors.on]);
+    const radius = height.value > 0 ? height.value / 2 : 20; // Fallback radius
 
     return {
-      backgroundColor: colorValue,
-      borderRadius: height.value / 2,
+      backgroundColor: color,
+      borderRadius: radius,
     };
   });
 
   const thumbAnimatedStyle = useAnimatedStyle(() => {
-    const moveValue = interpolate(Number(value.value), [0, 1], [0, width.value - height.value]);
-    const translateValue = withTiming(moveValue, { duration });
+    const moveValue = interpolate(animatedValue.value, [0, 1], [0, width.value - height.value]);
+    const radius = height.value > 0 ? height.value / 2 : 20; // Fallback radius
 
     return {
-      transform: [{ translateX: translateValue }],
-      borderRadius: height.value / 2,
+      transform: [{ translateX: moveValue }],
+      borderRadius: radius,
     };
   });
 
@@ -66,10 +82,12 @@ const switchStyles = StyleSheet.create({
     width: 80,
     height: 40,
     padding: 5,
+    borderRadius: 20, // Add initial borderRadius to prevent glitch
   },
   thumb: {
     height: '100%',
     aspectRatio: 1,
     backgroundColor: 'white',
+    borderRadius: 20, // Add initial borderRadius to prevent glitch
   },
 });

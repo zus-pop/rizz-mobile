@@ -13,8 +13,19 @@ export const unstable_settings = {
 };
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
+import { LocationProvider, NotificationProvider } from '../providers';
+import * as Notifications from 'expo-notifications';
 
 const queryClient = new QueryClient();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 export default function RootLayout() {
   useReactQueryDevTools(queryClient);
@@ -22,14 +33,18 @@ export default function RootLayout() {
     <GestureHandlerRootView>
       <GluestackUIProvider mode="system">
         <QueryClientProvider client={queryClient}>
-          <BottomSheetModalProvider>
-            <Stack initialRouteName="(tabs)">
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-              <Stack.Screen name="profile-details" options={{ headerShown: false }} />
-            </Stack>
-            <Toaster swipeToDismissDirection="up" />
-          </BottomSheetModalProvider>
+          <NotificationProvider>
+            <LocationProvider>
+              <BottomSheetModalProvider>
+                <Stack initialRouteName="(tabs)">
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                  <Stack.Screen name="profile-details" options={{ headerShown: false }} />
+                </Stack>
+                <Toaster swipeToDismissDirection="up" />
+              </BottomSheetModalProvider>
+            </LocationProvider>
+          </NotificationProvider>
         </QueryClientProvider>
       </GluestackUIProvider>
     </GestureHandlerRootView>

@@ -10,4 +10,7 @@ const {
 
 const config = getDefaultConfig(__dirname);
 
+config.resolver.assetExts = [
+    ...config.resolver.assetExts, 'lottie'];
+
 module.exports = wrapWithReanimatedMetroConfig(withNativeWind(config, { input: './global.css' }));

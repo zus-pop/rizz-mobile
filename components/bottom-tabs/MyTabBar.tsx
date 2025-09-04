@@ -86,6 +86,8 @@ const MyTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation 
         return <Feather name="home" size={ICON_SIZE} color={color} />;
       case 'liked':
         return <Feather name="heart" size={ICON_SIZE} color={color} />;
+      case 'chat':
+        return <Feather name="message-circle" size={ICON_SIZE} color={color} />;
       default:
         return <Feather name="home" size={ICON_SIZE} color={color} />;
     }
@@ -99,12 +101,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: PRIMARY_COLOR,
-    width: '80%',
+    width: '60%',
     alignSelf: 'center',
-    bottom: 20,
+    bottom: 18,
     borderRadius: 40,
-    paddingHorizontal: 12,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
@@ -114,14 +116,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 36,
+    height: 40,
     paddingHorizontal: 13,
     borderRadius: 30,
   },
   text: {
     color: PRIMARY_COLOR,
     marginLeft: 8,
-    fontWeight: '500',
+    fontWeight: '800',
   },
 });
 

@@ -1,8 +1,7 @@
 import { WINDOW } from '@/constants/sizes';
 import { Profile } from '@/types/profile';
-import { FontAwesome } from '@expo/vector-icons';
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -328,7 +327,7 @@ const RizzCard = ({
   return (
     <View
       pointerEvents="box-none"
-      className="absolute inset-0 bottom-20 flex-1 items-center justify-center"
+      className="absolute inset-0 -bottom-20 flex-1 items-center justify-center"
       style={{ zIndex: reverse ? index : length - index }}>
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[animatedCardStyle, styles.cardContainer]}>
@@ -343,46 +342,116 @@ const RizzCard = ({
 
 // Simplified Card component
 function Card({ profile }: { profile: Profile }) {
+  const currentImageIndex = useSharedValue(0);
+  const imageCount = profile.images.length;
+  const getProgressBarStyle = (index: number) => {
+    return useAnimatedStyle(() => {
+      const isActive = currentImageIndex.value === index;
+      return {
+        backgroundColor: withTiming(isActive ? 'white' : 'rgba(255, 255, 255, 0.3)', {
+          duration: 300,
+        }),
+      };
+    });
+  };
+
+  const navigateToPrevious = () => {
+    'worklet';
+    if (currentImageIndex.value > 0) {
+      currentImageIndex.value = currentImageIndex.value - 1;
+    }
+  };
+
+  const navigateToNext = () => {
+    'worklet';
+    if (currentImageIndex.value < imageCount - 1) {
+      currentImageIndex.value = currentImageIndex.value + 1;
+    }
+  };
+
   return (
     <Animated.View
-      className="h-[55vh] w-[70vw] items-center justify-end overflow-hidden rounded-2xl border-2 border-neutral-900 bg-white shadow-lg"
-      style={{
-        elevation: 6,
-      }}>
-      {/* Card Image */}
-      <Animated.Image
-        source={{ uri: profile.images.at(0) }}
-        className="absolute left-0 top-0 h-full w-full rounded-2xl"
-        resizeMode="cover"
-      />
-      {/* Top symbols */}
-      <View className="absolute left-4 top-3 z-10 flex-row items-center">
-        <Text
-          className="text-2xl font-bold text-white"
-          style={{
-            textShadowColor: '#000',
-            textShadowOffset: { width: 1, height: 1 },
-            textShadowRadius: 2,
-          }}>
-          ♠
-        </Text>
+      className="border-black-800 h-[55vh] w-[70vw] overflow-hidden rounded-2xl border-[0.8px] shadow-lg"
+      style={{ elevation: 6 }}>
+      {/* Progress indicators */}
+      <View className="absolute left-2 right-2 top-2 z-10 flex-row space-x-1">
+        {profile.images.map((_, index) => (
+          <Animated.View
+            key={index}
+            className="h-1 flex-1 rounded-full"
+            style={getProgressBarStyle(index)}
+          />
+        ))}
       </View>
-      <View className="absolute right-4 top-3 z-10 flex-row items-center">
-        <TouchableOpacity
-          className="rounded-full p-2"
-          onPress={() => {
-            // Handle detail view here
-          }}
-          activeOpacity={0.85}>
-          <FontAwesome name="info" color={'white'} size={20} />
-        </TouchableOpacity>
-      </View>
-      {/* Info Overlay */}
-      <View className="w-full rounded-b-2xl bg-white/70 px-5 pb-5 pt-4">
-        <View className="items-center">
-          <Text className="text-xl font-bold text-neutral-900">{`${profile.firstName} ${profile.lastName}`}</Text>
-          <Text className="mt-1 text-base text-neutral-700">Age: {profile.age}</Text>
+
+      {/* Card Images */}
+      {profile.images.map((imageSource, index) => {
+        const imageAnimatedStyle = useAnimatedStyle(() => {
+          return {
+            opacity: currentImageIndex.value === index ? 1 : 0,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          };
+        });
+
+        return (
+          <Animated.View key={index} style={imageAnimatedStyle}>
+            <Image
+              source={{ uri: imageSource }}
+              style={{ flex: 1, width: '100%', height: '100%' }}
+            />
+          </Animated.View>
+        );
+      })}
+
+      {/* General dark overlay for the entire image */}
+      <View className="absolute inset-0 bg-black/20" />
+
+      {/* Tap zones for navigation - only when there are multiple images */}
+      {imageCount > 1 && (
+        <View className="absolute inset-0 flex-row" pointerEvents="box-none">
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={() => {
+              runOnJS(navigateToPrevious)();
+            }}
+          />
+          <TouchableOpacity
+            className="flex-1"
+            activeOpacity={1}
+            onPress={() => {
+              runOnJS(navigateToNext)();
+            }}
+          />
         </View>
+      )}
+
+      {/* Dark overlay for text contrast */}
+      <View className="absolute bottom-0 left-0 right-0 h-1/5 bg-black/50" />
+
+      {/* Text Overlay */}
+      <View className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
+        {/* Left side - Common info */}
+        <View className="flex-1">
+          <Text className="mb-1 text-2xl font-bold text-white">
+            {`${profile.firstName} ${profile.lastName}`}
+          </Text>
+          <Text className="text-lg text-white/90">Age: {profile.age}</Text>
+        </View>
+
+        {/* Right side - View detail trigger */}
+        <TouchableOpacity
+          className="ml-4 rounded-full bg-white/20 p-3"
+          activeOpacity={0.7}
+          onPress={() => {
+            console.log('View details for:', profile.firstName);
+          }}>
+          <Text className="font-semibold text-white">ℹ️</Text>
+        </TouchableOpacity>
       </View>
     </Animated.View>
   );

@@ -1,8 +1,7 @@
+import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
-import { View } from 'react-native';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
-import { LegendList } from '@legendapp/list';
 
 interface InterestedInScreenProps {
   onNext: (selection: string) => void;

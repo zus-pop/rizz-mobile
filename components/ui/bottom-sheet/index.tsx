@@ -14,9 +14,9 @@ import { BottomSheetProps, BSHandleProps, CustomBackdropProps } from './types';
 
 const BottomSheetTrigger = Fragment;
 
-type BottomSheetModal = BSModalType;
+type BottomSheetModalType = BSModalType;
 
-const BottomSheetModal = forwardRef<
+const BottomSheetModalType = forwardRef<
   BSModal,
   BottomSheetProps & { children: React.ReactNode; isOpen?: boolean }
 >(({ children, ...rest }: BottomSheetProps, ref) => {
@@ -66,7 +66,7 @@ const CustomBackdrop = ({ animatedIndex, style, onPress }: CustomBackdropProps) 
 export {
   BottomSheet,
   BottomSheetHandle,
-  BottomSheetModal,
+  BottomSheetModalType as BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
   BottomSheetTrigger,

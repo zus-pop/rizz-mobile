@@ -15,12 +15,14 @@ export default function TabLayout() {
         name="index"
         options={{
           headerShown: false,
+          tabBarLabel: 'Discover',
         }}
       />
       <Tabs.Screen
         name="liked"
         options={{
           title: 'Liked',
+          headerShown: false,
         }}
       />
     </Tabs>
