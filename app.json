@@ -2,6 +2,7 @@
   "expo": {
     "name": "rizz",
     "slug": "rizz",
+    "owner": "inspira01",
     "version": "1.0.0",
     "scheme": "rizz",
     "web": {
@@ -35,7 +36,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "vn.fptu.rizz-mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
