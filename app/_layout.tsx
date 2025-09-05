@@ -15,6 +15,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { LocationProvider, NotificationProvider } from '../providers';
 import * as Notifications from 'expo-notifications';
+import { StatusBar } from 'react-native';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ export default function RootLayout() {
   useReactQueryDevTools(queryClient);
   return (
     <GestureHandlerRootView>
+      <StatusBar translucent animated barStyle={'dark-content'} backgroundColor={'transparent'} />
       <GluestackUIProvider mode="system">
         <QueryClientProvider client={queryClient}>
           <NotificationProvider>

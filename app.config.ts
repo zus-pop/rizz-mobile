@@ -38,6 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: '#ffffff',
       },
       package: packageName,
+      googleServicesFile: './google-services.json',
     },
     updates: {
       url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
