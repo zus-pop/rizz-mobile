@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text } from 'react-native';
-import QuestionnaireLayout from './QuestionnaireLayout';
-import OptionButton from './OptionButton';
 import { LegendList } from '@legendapp/list';
+import { useState } from 'react';
+import { View } from 'react-native';
+import OptionButton from './OptionButton';
+import QuestionnaireLayout from './QuestionnaireLayout';
 
 interface DealBreakerScreenProps {
   onNext: (selections: string[]) => void;

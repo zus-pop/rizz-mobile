@@ -6,7 +6,8 @@ import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import { useStyleContext, withStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
 import { cssInterop } from 'nativewind';
 import React from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 const SCOPE = 'BUTTON';
 
@@ -15,7 +16,7 @@ const Root = withStyleContext(Pressable, SCOPE);
 const UIButton = createButton({
   Root: Root,
   Text,
-  Group: View,
+  Group: Animated.View,
   Spinner: ActivityIndicator,
   Icon: UIIcon,
 });
@@ -397,4 +398,3 @@ ButtonIcon.displayName = 'ButtonIcon';
 ButtonGroup.displayName = 'ButtonGroup';
 
 export { Button, ButtonGroup, ButtonIcon, ButtonSpinner, ButtonText };
-

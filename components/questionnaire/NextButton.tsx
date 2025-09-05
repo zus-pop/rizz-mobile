@@ -1,6 +1,4 @@
-import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { Svg, Path } from 'react-native-svg';
+import { Path, Svg } from 'react-native-svg';
 import { Button, ButtonText } from '../ui/button';
 
 interface NextButtonProps {
