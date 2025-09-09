@@ -1,69 +1,69 @@
-import { Linking, StyleSheet, Text, View } from 'react-native';
-
+import { Heading } from '@/components/ui/heading';
+import { Text } from '@/components/ui/text';
 import { LegendList } from '@legendapp/list';
-import { useEffect } from 'react';
-import { useLocation, useNotification } from '../../providers';
-import Loading from '../../components/Loading';
-import * as Notifications from 'expo-notifications';
-
+import { useState } from 'react';
+import { View } from 'react-native';
+import LikedCard from '../../components/liked/LikedCard';
 export default function Liked() {
-  // Cái này là trang render ai like mình nhưng mà đang test vài thứ khác
-  const { location, requestLocation, geocodedAddresses } = useLocation();
-  const { pushToken, requestPushToken } = useNotification();
-  useEffect(() => {
-    requestLocation();
-    requestPushToken();
-  }, []);
-
-  if (!location || !geocodedAddresses?.length) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ fontSize: 20 }} onPress={Linking.openSettings}>
-          Setting
-        </Text>
-        <Loading scale={0.8} />
-      </View>
-    );
-  }
+  const [likedUsers] = useState([
+    {
+      id: '1',
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      age: 28,
+      images: ['https://picsum.photos/1080/1080'],
+    },
+    {
+      id: '2',
+      firstName: 'Emma',
+      lastName: 'Davis',
+      age: 25,
+      images: ['https://picsum.photos/1920/1080'],
+    },
+    {
+      id: '3',
+      firstName: 'Jessica',
+      lastName: 'Wilson',
+      age: 30,
+      images: ['https://picsum.photos/1080/1920'],
+    },
+    {
+      id: '4',
+      firstName: 'Ashley',
+      lastName: 'Brown',
+      age: 27,
+      images: ['https://picsum.photos/1080/1080'],
+    },
+  ]);
   return (
-    <View style={styles.container}>
-      <Text style={{ fontSize: 20 }} onPress={Linking.openSettings}>
-        Setting
-      </Text>
-      <Text style={{ fontSize: 15 }} onPress={schedulePushNotification}>
-        Test local (in-app) notification
-      </Text>
-      <Text style={{ fontSize: 20 }}>Push Token (Must use Real Device):</Text>
-      <Text>Token: {pushToken ?? 'N/A'}</Text>
-      <Text style={{ fontSize: 20 }}>Current Location:</Text>
-      <Text>Latitude: {location.coords.latitude ?? 'N/A'}</Text>
-      <Text>Longitude: {location.coords.longitude ?? 'N/A'}</Text>
-      <LegendList
-        keyExtractor={(item) => item.city!}
-        data={geocodedAddresses}
-        renderItem={({ item }) => <Text>Address: {item.formattedAddress ?? 'N/A'}</Text>}
-      />
+    <View style={{ flex: 1, backgroundColor: '#efebfc' }}>
+      <View className="mt-10 flex-1" style={{ margin: 20 }}>
+        <View className="gap-2">
+          <Heading size="3xl" className="text-black">
+            Liked
+          </Heading>
+          <Text size="2xl" className="text-black">
+            This is a list of people who have liked you.
+          </Text>
+        </View>
+
+        <View className="mt-6 flex-1">
+          <LegendList
+            data={likedUsers}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <LikedCard profile={item} />}
+            showsVerticalScrollIndicator={false}
+            numColumns={2}
+            columnWrapperStyle={{ gap: 12 }}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            ListEmptyComponent={
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-center text-gray-500">No likes yet</Text>
+              </View>
+            }
+          />
+        </View>
+      </View>
     </View>
   );
 }
-
-async function schedulePushNotification() {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "You've got mail! 📬",
-      body: 'Here is the notification body',
-      data: { data: 'goes here', test: { test1: 'more data' } },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: 2,
-    },
-  });
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-});

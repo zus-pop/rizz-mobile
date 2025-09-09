@@ -4,7 +4,7 @@ import React, { JSX, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Image, TouchableOpacity, View } from 'react-native';
 import { Extrapolation, interpolate, useSharedValue } from 'react-native-reanimated';
 import Carousel, { ICarouselInstance, Pagination } from 'react-native-reanimated-carousel';
-import { Text } from '../components/ui/text';
+import { Text } from '@/components/ui/text';
 
 const data = [
   {
@@ -57,7 +57,7 @@ const OnBoarding: React.FC = () => {
           ref={ref}
           loop
           autoPlay
-          width={Dimensions.get('window').WIDTH}
+          width={Dimensions.get('window').width}
           onProgressChange={progress}
           snapEnabled
           withAnimation={{
@@ -67,7 +67,7 @@ const OnBoarding: React.FC = () => {
             },
           }}
           autoPlayInterval={3000}
-          height={Dimensions.get('window').HEIGHT * 0.8}
+          height={Dimensions.get('window').height * 0.8}
           style={{ zIndex: 100 }}
           pagingEnabled
           data={data}
@@ -169,8 +169,8 @@ function Section1() {
 function Section2() {
   const progress = useSharedValue<number>(0);
   const ref = React.useRef<ICarouselInstance>(null);
-  const width = Dimensions.get('window').WIDTH;
-  const height = Dimensions.get('window').HEIGHT;
+  const width = Dimensions.get('window').width;
+  const height = Dimensions.get('window').height;
 
   useEffect(() => {
     if (ref.current) {

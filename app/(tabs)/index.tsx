@@ -46,7 +46,7 @@ export default function Discover() {
   const currentIndex = useSharedValue<number>(0);
   const swipeDirection = useSharedValue<'left' | 'right' | 'idle' | 'undo'>('idle');
   const swipeButtonActionSize = useMemo(() => 40, []);
-  const MAX_VISIBLE = useMemo(() => 3, []);
+  const MAX_VISIBLE = useMemo(() => 2, []);
   const enableDeviceMotion = useSharedValue<boolean>(false);
 
   // Bottom sheet reference
@@ -288,7 +288,7 @@ export default function Discover() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eae3ff',
+    backgroundColor: '#efebfc',
     justifyContent: 'center',
     alignItems: 'center',
   },
