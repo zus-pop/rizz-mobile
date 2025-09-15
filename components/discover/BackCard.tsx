@@ -16,8 +16,6 @@ export default function BackCard({
   profile,
   width,
   height,
-  index,
-  currentIndex,
 }: {
   onPress: () => void;
   profile: Profile;
@@ -160,9 +158,9 @@ const backCardStyles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    top: 18,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     borderRadius: 15,
     width: 30,
     height: 30,

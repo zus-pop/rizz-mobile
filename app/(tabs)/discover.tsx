@@ -45,7 +45,7 @@ export default function Discover() {
 
   const currentIndex = useSharedValue<number>(0);
   const swipeDirection = useSharedValue<'left' | 'right' | 'idle' | 'undo'>('idle');
-  const swipeButtonActionSize = useMemo(() => 40, []);
+  const swipeButtonActionSize = useMemo(() => 33, []);
   const MAX_VISIBLE = useMemo(() => 2, []);
   const enableDeviceMotion = useSharedValue<boolean>(false);
 
@@ -73,7 +73,7 @@ export default function Discover() {
     () => currentIndex.value,
     (value) => {
       if (!soulmates) return;
-      if (value === soulmates.length - MAX_VISIBLE) {
+      if (value === soulmates.length - 5) {
         runOnJS(fetchNextPage)();
       }
     }
@@ -118,26 +118,26 @@ export default function Discover() {
             />
           ))}
         </View>
-        <View className="bottom-3 z-20 m-auto flex-row gap-8">
+        <View className="bottom-[0.5] z-20 m-auto flex-row gap-8">
           <SwipeButton
             onPress={() => {
               swipeDirection.value = 'left';
             }}
-            className="h-20 w-20 bg-white shadow-md shadow-red-400"
+            className="h-16 w-16 bg-white shadow-md shadow-red-400"
             icon={<Entypo size={swipeButtonActionSize} name="cross" color={'#fb3224'} />}
           />
           <SwipeButton
             onPress={() => {
               swipeDirection.value = 'undo';
             }}
-            className="h-20 w-20 bg-white shadow-md shadow-cyan-400"
+            className="h-16 w-16 bg-white shadow-md shadow-cyan-400"
             icon={<Entypo size={swipeButtonActionSize} name="back" color={'#24e5fb'} />}
           />
           <SwipeButton
             onPress={() => {
               swipeDirection.value = 'right';
             }}
-            className="h-20 w-20 bg-white shadow-md shadow-pink-400 "
+            className="h-16 w-16 bg-white shadow-md shadow-pink-400 "
             icon={<Entypo size={swipeButtonActionSize} name="heart" color={'#fa5eff'} />}
           />
         </View>

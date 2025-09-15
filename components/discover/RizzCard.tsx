@@ -76,6 +76,7 @@ const RizzCard = ({
   const damping = useMemo(() => 30, []);
   const theta = useMemo(() => Math.random() * 20 - 10, []);
   const xValue = useMemo(() => 20, []);
+  const isPanning = useSharedValue<boolean>(false);
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(-height - 300);
@@ -94,9 +95,11 @@ const RizzCard = ({
 
   useDerivedValue(() => {
     'worklet';
+    if (!isPanning.value) {
+      rotateZ.value = withSpring(0, SPRING_CONFIG);
+    }
     if (currentIndex.value === index && initialDone.value) {
       scale.value = withSpring(1.32, SPRING_CONFIG);
-      rotateZ.value = withSpring(0, SPRING_CONFIG);
       rotateX.value = withSpring(0, SPRING_CONFIG);
     } else {
       rotateX.value = withSpring(xValue, SPRING_CONFIG); // Lying down
@@ -203,17 +206,24 @@ const RizzCard = ({
     .activeOffsetX([-10, 10])
     .failOffsetY([-10, 10])
     .onStart(() => {
+      isPanning.value = true;
       if (currentIndex.value === index) {
         prevX.value = translateX.value;
         prevY.value = translateY.value;
-        scale.value = withTiming(1.1, { easing: Easing.inOut(Easing.ease) });
-        rotateZ.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
+        // scale.value = withTiming(1.1, { easing: Easing.inOut(Easing.ease) });
+        // rotateZ.value = withTiming(0, { easing: Easing.inOut(Easing.ease) });
       }
     })
     .onUpdate(({ translationX, translationY, velocityX }) => {
       if (currentIndex.value === index) {
         translateX.value = prevX.value + translationX;
         translateY.value = prevY.value + translationY;
+        // Smooth rotateZ animation based on translation distance
+        const progress = translationX / 200; // Adjust divisor for sensitivity
+        const clampedProgress = Math.max(-1, Math.min(1, progress)); // Clamp between -1 and 1
+
+        // Interpolate between -20 and +20 degrees based on progress
+        rotateZ.value = clampedProgress * 15;
       }
       const dest = snapPoint(translateX.value, velocityX, SNAP_POINTS);
       if (dest < LEFT_SWIPE_THRESH_HOLD) {
@@ -230,7 +240,6 @@ const RizzCard = ({
         translateX.value = withSpring(dest, { velocity: velocityX, damping });
         translateY.value = withSpring(0, { velocity: velocityY, damping });
         scale.value = withTiming(1, { easing: Easing.inOut(Easing.ease) });
-        rotateZ.value = withTiming(Math.random() * 20 - 10, { easing: Easing.inOut(Easing.ease) });
 
         if (dest === LEFT_SWIPE_THRESH_HOLD) {
           runOnJS(onSwipeLeft)();
@@ -240,6 +249,7 @@ const RizzCard = ({
           if (isFlipped.value) isFlipped.value = false;
         }
       }
+      isPanning.value = false;
     });
 
   // Simplified animated style

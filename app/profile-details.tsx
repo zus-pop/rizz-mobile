@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { router } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CustomInput } from '~/components/ui/CustomInput';
 import { DatePickerInput } from '~/components/ui/DatePickerInput';
 import { UniversitySelect } from '~/components/ui/UniversitySelect';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileDetailsScreen() {
   const [firstName, setFirstName] = useState('');

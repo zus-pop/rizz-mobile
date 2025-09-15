@@ -12,7 +12,7 @@ export default function TabLayout() {
         animation: 'fade',
       }}>
       <Tabs.Screen
-        name="index"
+        name="discover"
         options={{
           headerShown: false,
           tabBarLabel: 'Discover',

@@ -82,7 +82,7 @@ const MyTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation 
   function getIconByRouteName(routeName: string, color: string) {
     const ICON_SIZE = 28;
     switch (routeName) {
-      case 'index':
+      case 'discover':
         return <Feather name="home" size={ICON_SIZE} color={color} />;
       case 'liked':
         return <Feather name="heart" size={ICON_SIZE} color={color} />;
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_COLOR,
     width: '60%',
     alignSelf: 'center',
-    bottom: 18,
+    bottom: 5,
     borderRadius: 40,
     paddingHorizontal: 10,
     paddingVertical: 12,

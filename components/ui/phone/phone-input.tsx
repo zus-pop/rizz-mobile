@@ -9,7 +9,7 @@ import PhoneInput from 'react-native-phone-input';
 import Animated from 'react-native-reanimated';
 
 interface PhoneInputSectionProps {
-  onContinue: () => void;
+  onContinue: (phone: string) => void;
 }
 
 export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps) {
@@ -67,7 +67,7 @@ export default function PhoneInputSection({ onContinue }: PhoneInputSectionProps
 
     if (isValidPhone && phoneNumber.length > 0) {
       console.log('Formatted number for server:', formattedNumber);
-      onContinue();
+      onContinue(formattedNumber);
     }
   };
 

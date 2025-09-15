@@ -11,12 +11,7 @@
         },
         "plugins": [
             "expo-router",
-            [
-                "expo-dev-launcher",
-                {
-                    "launchMode": "most-recent"
-                }
-            ],
+            "expo-font",
             "expo-web-browser",
             "expo-audio",
             [
@@ -47,7 +42,10 @@
                 {
                     "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
                 }
-            ]
+            ],
+            "@react-native-firebase/app",
+            "@react-native-firebase/auth",
+            "@react-native-google-signin/google-signin"
         ],
         "experiments": {
             "typedRoutes": true,

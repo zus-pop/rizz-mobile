@@ -1,6 +1,7 @@
+import { Text } from '@/components/ui/text';
 import { Profile } from '@/types/profile';
 import { AntDesign } from '@expo/vector-icons';
-import { Image, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, {
   runOnJS,
   SharedValue,
@@ -8,7 +9,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Text } from '../ui/text';
 
 interface FrontCardProps {
   profile: Profile;
@@ -17,7 +17,7 @@ interface FrontCardProps {
   currentIndex: SharedValue<number>;
 }
 
-export default function FrontCard({ profile, onPress, currentIndex, index }: FrontCardProps) {
+export default function FrontCard({ profile, onPress }: FrontCardProps) {
   const currentImageIndex = useSharedValue(0);
   const imageCount = profile.images.length;
   const getProgressBarStyle = (index: number) => {
@@ -110,7 +110,9 @@ export default function FrontCard({ profile, onPress, currentIndex, index }: Fro
       <View className="absolute bottom-0 left-0 right-0 h-1/5 bg-black/50" />
 
       {/* Text Overlay */}
-      <View className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
+      <Pressable
+        onPress={onPress}
+        className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
         {/* Left side - Common info */}
         <View className="flex-1">
           <Text className="mb-1 text-2xl font-bold text-white">
@@ -123,7 +125,7 @@ export default function FrontCard({ profile, onPress, currentIndex, index }: Fro
         <TouchableOpacity className="ml-4 rounded-full p-3" activeOpacity={0.7} onPress={onPress}>
           <AntDesign name="retweet" size={24} color="#fa5eff" />
         </TouchableOpacity>
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }

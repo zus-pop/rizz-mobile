@@ -6,9 +6,15 @@ import Animated from 'react-native-reanimated';
 
 interface VerificationCodeSectionProps {
   onBack: () => void;
+  onConfirmCode: (code: string) => void;
 }
 
-export default function VerificationCodeSection({ onBack }: VerificationCodeSectionProps) {
+const num = 6;
+
+export default function VerificationCodeSection({
+  onBack,
+  onConfirmCode,
+}: VerificationCodeSectionProps) {
   const inputRef = useRef<TextInput>(null);
   const [timer, setTimer] = useState(42);
   const [code, setCode] = useState('');
@@ -27,19 +33,22 @@ export default function VerificationCodeSection({ onBack }: VerificationCodeSect
   };
 
   const handleCodeChange = (text: string) => {
-    // Only allow numeric input and limit to 4 characters
-    const numericText = text.replace(/[^0-9]/g, '').slice(0, 4);
+    // Only allow numeric input and limit to 6 characters
+    const numericText = text.replace(/[^0-9]/g, '').slice(0, num);
+    console.log(numericText);
     setCode(numericText);
-    if (numericText.length === 4) {
-      inputRef.current?.blur(); // Blur the input when 4 digits are entered
+    if (numericText.length === num) {
+      console.log('Sending OTP...');
+      inputRef.current?.blur(); // Blur the input when 6 digits are entered
+      onConfirmCode(numericText);
     }
   };
 
-  // Split the code into 4 digits for display
+  // Split the code into 6 digits for display
   const getDisplayDigits = () => {
     const digits = code.split('');
     const displayDigits = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < num; i++) {
       displayDigits.push(digits[i] || '');
     }
     return displayDigits;
@@ -79,7 +88,7 @@ export default function VerificationCodeSection({ onBack }: VerificationCodeSect
         value={code}
         onChangeText={handleCodeChange}
         keyboardType="number-pad"
-        maxLength={4}
+        maxLength={num}
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
         className="absolute -z-10 h-0 w-0 opacity-0"
@@ -96,12 +105,12 @@ export default function VerificationCodeSection({ onBack }: VerificationCodeSect
         style={{ gap: 9 }}>
         {getDisplayDigits().map((digit, index) => {
           const isFilled = digit !== '';
-          const isActive = index === code.length && code.length < 4;
+          const isActive = index === code.length && code.length < num;
 
           return (
             <View
               key={index}
-              className={`h-[70px] w-[67px] items-center justify-center rounded-[15px] ${
+              className={`h-16 w-14 items-center justify-center rounded-[12px] ${
                 isFilled
                   ? 'bg-[#FA5EFF]'
                   : isActive
@@ -109,7 +118,7 @@ export default function VerificationCodeSection({ onBack }: VerificationCodeSect
                     : 'border border-[#E8E6EA] bg-white'
               }`}>
               <Text
-                className={`text-[34px] font-bold ${
+                className={`text-xl font-bold ${
                   isFilled ? 'text-white' : isActive ? 'text-[#FA5EFF]' : 'text-[#E8E6EA]'
                 }`}
                 style={{ fontFamily: 'Roboto' }}>
