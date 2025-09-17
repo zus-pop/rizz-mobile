@@ -16,65 +16,66 @@ export default function BackCard({
   profile,
   width,
   height,
+  autoPlay = true,
 }: {
   onPress: () => void;
   profile: Profile;
   width?: number;
   height?: number;
-  index: number;
-  currentIndex: SharedValue<number>;
+  index?: number;
+  currentIndex?: SharedValue<number>;
+  autoPlay?: boolean;
 }) {
   const currentImageIndex = useSharedValue(0);
   const getProgressBarStyle = (index: number) => {
     return useAnimatedStyle(() => {
       const isActive = currentImageIndex.value === index;
       return {
-        backgroundColor: withTiming(isActive ? 'white' : 'rgba(255, 255, 255, 0.3)', {
-          duration: 100,
-        }),
+        backgroundColor: withTiming(
+          isActive ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.3)',
+          { duration: 200 }
+        ),
       };
     });
   };
+
+  // Calculate carousel height based on the image section height (45% of card height)
+  const carouselHeight = height ? height * 0.45 : 200;
+
   return (
-    <View
-      style={[
-        backCardStyles.card,
-        width && height
-          ? {
-              width,
-              height,
-            }
-          : {},
-      ]}>
+    <View style={[backCardStyles.card, width && height ? { width, height } : {}]}>
       <View style={backCardStyles.imageSection}>
+        {/* Progress indicators */}
         <View style={backCardStyles.progressContainer}>
           {profile.images.map((_, index) => (
             <Animated.View
-              className="h-1 flex-1 rounded-full"
               key={index}
-              style={getProgressBarStyle(index)}
+              style={[backCardStyles.progressBar, getProgressBarStyle(index)]}
             />
           ))}
         </View>
 
+        {/* Image carousel */}
         <Carousel
           loop
-          autoPlayInterval={3000}
-          width={width || 300}
-          height={200}
+          autoPlay={autoPlay}
+          autoPlayInterval={4000}
+          width={320}
           data={profile.images}
           onSnapToItem={(index) => {
             currentImageIndex.value = index;
           }}
           renderItem={({ item }) => (
-            <TouchableOpacity style={backCardStyles.imageContainer} activeOpacity={1}>
+            <View style={backCardStyles.imageContainer}>
               <Image source={{ uri: item }} style={backCardStyles.image} resizeMode="cover" />
-            </TouchableOpacity>
+              <View style={backCardStyles.overlay} />
+            </View>
           )}
         />
 
-        <TouchableOpacity style={backCardStyles.closeButton} onPress={onPress}>
-          <AntDesign name="retweet" size={24} color="#fa5eff" />
+        {/* Flip button */}
+        <TouchableOpacity style={backCardStyles.closeButton} onPress={onPress} activeOpacity={0.7}>
+          <AntDesign name="sync" size={20} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -141,11 +142,17 @@ const backCardStyles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'white',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   imageSection: {
-    height: '45%',
+    height: '36%',
     position: 'relative',
     overflow: 'hidden',
+    backgroundColor: '#f8f8f8', // Placeholder color when image is loading
   },
   image: {
     width: '100%',
@@ -160,77 +167,87 @@ const backCardStyles = StyleSheet.create({
     position: 'absolute',
     top: 18,
     right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 15,
-    width: 30,
-    height: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 18,
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   detailsSection: {
     flexGrow: 1,
     backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 100, // Increased padding to ensure scrollable content
+    padding: 20,
+    paddingBottom: 120, // Increased padding to ensure scrollable content
     flexGrow: 1, // Ensure content can grow
   },
   name: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   infoRow: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#666',
-    marginBottom: 6,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   value: {
     fontSize: 16,
     color: '#1a1a1a',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   interestsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 4,
+    marginTop: 6,
   },
   interestTag: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: '#f5f0ff', // Light purple to match app theme
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e8deff',
   },
   interestText: {
     fontSize: 14,
-    color: '#333',
+    color: '#6c47b8', // Purple to match theme
+    fontWeight: '500',
   },
-
   progressContainer: {
     position: 'absolute',
-    top: 8,
+    top: 12,
     left: 16,
     right: 16,
     flexDirection: 'row',
-    gap: 4,
+    gap: 6,
     zIndex: 10,
   },
   progressBar: {
     flex: 1,
-    height: 3,
+    height: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 1.5,
+    borderRadius: 2,
   },
   activeProgressBar: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -238,5 +255,6 @@ const backCardStyles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#f0f0f0', // Placeholder background
   },
 });

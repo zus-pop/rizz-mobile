@@ -264,3 +264,6 @@ gradle-app.setting
 
 rizz.json
 # End of https://www.toptal.com/developers/gitignore/api/reactnative
+
+.claude
+CLAUDE.md

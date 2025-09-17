@@ -15,7 +15,7 @@ import { useReactQueryDevTools } from '@dev-plugins/react-query';
 import { LocationProvider, NotificationProvider } from '@/providers';
 import * as Notifications from 'expo-notifications';
 import { StatusBar } from 'react-native';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const queryClient = new QueryClient();
 
@@ -28,9 +28,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
-GoogleSignin.configure({
-  webClientId: '',
-});
+// GoogleSignin.configure({
+//   webClientId: '',
+// });
 
 export default function RootLayout() {
   useReactQueryDevTools(queryClient);

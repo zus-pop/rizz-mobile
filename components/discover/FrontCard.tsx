@@ -13,8 +13,8 @@ import Animated, {
 interface FrontCardProps {
   profile: Profile;
   onPress: () => void;
-  index: number;
-  currentIndex: SharedValue<number>;
+  index?: number;
+  currentIndex?: SharedValue<number>;
 }
 
 export default function FrontCard({ profile, onPress }: FrontCardProps) {
@@ -46,9 +46,7 @@ export default function FrontCard({ profile, onPress }: FrontCardProps) {
   };
 
   return (
-    <Animated.View
-      className="border-black-800 h-[55vh] w-[70vw] overflow-hidden rounded-2xl border-[0.8px] shadow-lg"
-      style={{ elevation: 6 }}>
+    <Animated.View className=" h-full w-full overflow-hidden rounded-2xl " style={{ elevation: 6 }}>
       {/* Progress indicators */}
       <View className="absolute left-2 right-2 top-2 z-10 flex-row space-x-1">
         {profile.images.map((_, index) => (
@@ -110,9 +108,7 @@ export default function FrontCard({ profile, onPress }: FrontCardProps) {
       <View className="absolute bottom-0 left-0 right-0 h-1/5 bg-black/50" />
 
       {/* Text Overlay */}
-      <Pressable
-        onPress={onPress}
-        className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
+      <View className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
         {/* Left side - Common info */}
         <View className="flex-1">
           <Text className="mb-1 text-2xl font-bold text-white">
@@ -125,7 +121,7 @@ export default function FrontCard({ profile, onPress }: FrontCardProps) {
         <TouchableOpacity className="ml-4 rounded-full p-3" activeOpacity={0.7} onPress={onPress}>
           <AntDesign name="retweet" size={24} color="#fa5eff" />
         </TouchableOpacity>
-      </Pressable>
+      </View>
     </Animated.View>
   );
 }

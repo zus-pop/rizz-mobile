@@ -1,7 +1,8 @@
 import { fetchProfiles } from '@/api/profile';
 import AnimatedSwitch from '@/components/AnimatedSwitch';
+import BackCard from '@/components/discover/BackCard';
 import DiscoverHeader from '@/components/discover/DiscoverHeader';
-import RizzCard from '@/components/discover/RizzCard';
+import FrontCard from '@/components/discover/FrontCard';
 import SwipeButton from '@/components/discover/SwipeButton';
 import Loading from '@/components/Loading';
 import {
@@ -10,21 +11,17 @@ import {
   BottomSheetView,
   CustomBackdrop,
 } from '@/components/ui/bottom-sheet';
-import { Entypo, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import Animated, {
-  FadeIn,
-  FadeOut,
-  runOnJS,
-  useAnimatedReaction,
-  useSharedValue,
-} from 'react-native-reanimated';
-
+import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
+import { Swiper, SwiperCardRefType } from 'rn-swiper-list';
+import { Profile } from '../../types/profile';
+const ICON_SIZE = 24;
 export default function Discover() {
   const lookingForOptions = useMemo(
     () => ['Long-term relationship', 'Something casual', 'New friends', 'Still figuring it out'],
@@ -35,18 +32,28 @@ export default function Discover() {
     []
   );
 
-  const { data, fetchNextPage } = useInfiniteQuery({
-    queryKey: ['profiles'],
-    queryFn: ({ pageParam }) => fetchProfiles(pageParam),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+  // Current page state
+  const [currentPage, setCurrentPage] = useState(1);
+  // Track when we're loading the next page separately
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
+
+  // Fetch profiles with simple useQuery
+  const { data, refetch, isLoading } = useQuery({
+    queryKey: ['profiles', currentPage],
+    queryFn: () => fetchProfiles(currentPage),
     staleTime: 30 * 1000,
   });
 
-  const currentIndex = useSharedValue<number>(0);
-  const swipeDirection = useSharedValue<'left' | 'right' | 'idle' | 'undo'>('idle');
-  const swipeButtonActionSize = useMemo(() => 33, []);
-  const MAX_VISIBLE = useMemo(() => 2, []);
+  // Reset loading state when data changes
+  useEffect(() => {
+    if (data && isLoadingNextPage) {
+      // Small delay to allow smooth transition
+      setTimeout(() => {
+        setIsLoadingNextPage(false);
+      }, 500);
+    }
+  }, [data, isLoadingNextPage]);
+
   const enableDeviceMotion = useSharedValue<boolean>(false);
 
   // Bottom sheet reference
@@ -54,11 +61,6 @@ export default function Discover() {
 
   // Bottom sheet snap points
   const snapPoints = useMemo(() => ['75%'], []);
-
-  const soulmates = useMemo(() => {
-    if (!data) return null;
-    return data.pages.flatMap((p) => p.profiles);
-  }, [data]);
 
   // Bottom sheet handlers
   const handlePresentFilterSheet = useCallback(() => {
@@ -69,17 +71,42 @@ export default function Discover() {
     filterBottomSheetRef.current?.dismiss();
   }, []);
 
-  useAnimatedReaction(
-    () => currentIndex.value,
-    (value) => {
-      if (!soulmates) return;
-      if (value === soulmates.length - 5) {
-        runOnJS(fetchNextPage)();
-      }
-    }
-  );
+  const ref = useRef<SwiperCardRefType>(null);
 
-  if (!soulmates) return <Loading scale={0.6} />;
+  const renderCard = useCallback((profile: Profile) => {
+    return <FrontCard profile={profile} onPress={() => {}} />;
+  }, []);
+  const renderFlippedCard = useCallback((profile: Profile) => {
+    return <BackCard profile={profile} onPress={() => {}} />;
+  }, []);
+  const OverlayLabelRight = useCallback(() => {
+    return (
+      <View
+        style={[
+          styles.overlayLabelContainer,
+          {
+            backgroundColor: 'green',
+          },
+        ]}
+      />
+    );
+  }, []);
+  const OverlayLabelLeft = useCallback(() => {
+    return (
+      <View
+        style={[
+          styles.overlayLabelContainer,
+          {
+            backgroundColor: 'red',
+          },
+        ]}
+      />
+    );
+  }, []);
+
+  // Only show full page loading for first load (page 1)
+  if ((isLoading && currentPage === 1) || (!data?.profiles && !isLoadingNextPage))
+    return <Loading scale={0.6} />;
 
   return (
     <>
@@ -95,50 +122,160 @@ export default function Discover() {
         exiting={FadeOut.duration(300)}
         style={styles.container}>
         <DiscoverHeader title="Discover" onFilterPress={handlePresentFilterSheet} />
-        <View className="z-10 flex-[0.73] shadow-md shadow-black/50" pointerEvents="box-none">
-          {soulmates.map((item, index) => (
-            <RizzCard
-              maxVisible={MAX_VISIBLE}
-              swipeDirection={swipeDirection}
-              currentIndex={currentIndex}
-              profile={item}
-              enableDeviceMotion={enableDeviceMotion}
-              length={soulmates.length}
-              key={index}
-              index={index}
-              onSwipeLeft={() => {
-                if (currentIndex.value < soulmates.length) currentIndex.value += 1;
+        <View style={styles.subContainer} pointerEvents="box-none">
+          {isLoadingNextPage ? (
+            <View style={styles.loadingContainer}>
+              <Loading scale={0.6} />
+            </View>
+          ) : (
+            <Swiper
+              ref={ref}
+              disableTopSwipe
+              disableBottomSwipe
+              keyExtractor={(item) => item.firstName + item.lastName}
+              key={`swiper-page-${currentPage}`} // Only re-render when page changes
+              data={data?.profiles || []}
+              cardStyle={styles.cardStyle}
+              overlayLabelContainerStyle={styles.overlayLabelContainerStyle}
+              renderCard={renderCard}
+              // Animation configs for smoother swipes - increased stiffness, reduced damping
+              swipeRightSpringConfig={{
+                stiffness: 180,
+                damping: 8,
+                mass: 0.4,
+                overshootClamping: false,
               }}
-              onSwipeRight={() => {
-                if (currentIndex.value < soulmates.length) currentIndex.value += 1;
+              swipeLeftSpringConfig={{
+                stiffness: 180,
+                damping: 8,
+                mass: 0.4,
+                overshootClamping: false,
               }}
-              onUndoSwipe={() => {
-                if (currentIndex.value > 0) currentIndex.value -= 1;
+              swipeTopSpringConfig={{
+                stiffness: 180,
+                damping: 8,
+                mass: 0.4,
+                overshootClamping: false,
+              }}
+              swipeBottomSpringConfig={{
+                stiffness: 180,
+                damping: 8,
+                mass: 0.4,
+                overshootClamping: false,
+              }}
+              // Enable velocity-based swiping - lower threshold for faster response
+              swipeVelocityThreshold={200}
+              // Improve swipe back animation - more responsive
+              swipeBackXSpringConfig={{
+                stiffness: 200,
+                damping: 10,
+                mass: 0.3,
+                overshootClamping: false,
+              }}
+              swipeBackYSpringConfig={{
+                stiffness: 200,
+                damping: 10,
+                mass: 0.3,
+                overshootClamping: false,
+              }}
+              // Customize rotation animation - more responsive rotation
+              rotateInputRange={[-200, 0, 200]}
+              rotateOutputRange={[-Math.PI / 8, 0, Math.PI / 8]}
+              onIndexChange={(index) => {
+                const maxIndex = data?.profiles ? data.profiles.length - 1 : 0;
+                console.log(`Current Active index: ${index}/${maxIndex}`);
+              }}
+              onSwipeRight={(cardIndex) => {
+                console.log('cardIndex', cardIndex);
+              }}
+              onPress={() => {
+                console.log('onPress');
+              }}
+              onSwipedAll={() => {
+                console.log('All cards swiped, fetching next page...');
+                if (data?.nextPage) {
+                  // Set loading state for next page only
+                  setIsLoadingNextPage(true);
+                  // Update page number which will trigger refetch
+                  setCurrentPage(data.nextPage);
+                } else {
+                  console.log('No more profiles available');
+                  // Optionally reset to page 1 if at the end
+                  setIsLoadingNextPage(true);
+                  setCurrentPage(1);
+                }
+              }}
+              prerenderItems={3} // Prerender more items for smoother transitions
+              FlippedContent={renderFlippedCard}
+              // Flip animation props
+              direction="y"
+              flipDuration={350} // Faster flip for smoother experience
+              onSwipeLeft={(cardIndex) => {
+                console.log('onSwipeLeft', cardIndex);
+              }}
+              onSwipeTop={(cardIndex) => {
+                console.log('onSwipeTop', cardIndex);
+              }}
+              onSwipeBottom={(cardIndex) => {
+                console.log('onSwipeBottom', cardIndex);
+              }}
+              OverlayLabelRight={OverlayLabelRight}
+              OverlayLabelLeft={OverlayLabelLeft}
+              // OverlayLabelTop={OverlayLabelTop}
+              // OverlayLabelBottom={OverlayLabelBottom}
+              // Overlay animation configs - more responsive transitions
+              inputOverlayLabelRightOpacityRange={[0, 60]}
+              outputOverlayLabelRightOpacityRange={[0, 1]}
+              inputOverlayLabelLeftOpacityRange={[0, -60]}
+              outputOverlayLabelLeftOpacityRange={[0, 1]}
+              inputOverlayLabelTopOpacityRange={[0, -60]}
+              outputOverlayLabelTopOpacityRange={[0, 1]}
+              inputOverlayLabelBottomOpacityRange={[0, 60]}
+              outputOverlayLabelBottomOpacityRange={[0, 1]}
+              onSwipeActive={() => {
+                console.log('onSwipeActive');
+              }}
+              onSwipeStart={() => {
+                console.log('onSwipeStart');
+              }}
+              onSwipeEnd={() => {
+                console.log('onSwipeEnd');
               }}
             />
-          ))}
+          )}
         </View>
-        <View className="bottom-[0.5] z-20 m-auto flex-row gap-8">
+        <View style={styles.buttonsContainer}>
           <SwipeButton
-            onPress={() => {
-              swipeDirection.value = 'left';
-            }}
+            icon={<AntDesign name="retweet" size={24} color="#fa5eff" />}
             className="h-16 w-16 bg-white shadow-md shadow-red-400"
-            icon={<Entypo size={swipeButtonActionSize} name="cross" color={'#fb3224'} />}
+            style={styles.button}
+            onPress={() => {
+              ref.current?.flipCard();
+            }}
           />
           <SwipeButton
+            icon={<Entypo size={ICON_SIZE} name="cross" color={'#fb3224'} />}
+            // style={styles.button}
+            className="h-16 w-16 bg-white shadow-md shadow-red-400"
             onPress={() => {
-              swipeDirection.value = 'undo';
+              ref.current?.swipeLeft();
             }}
+          />
+          <SwipeButton
+            icon={<Entypo size={ICON_SIZE} name="back" color={'#24e5fb'} />}
             className="h-16 w-16 bg-white shadow-md shadow-cyan-400"
-            icon={<Entypo size={swipeButtonActionSize} name="back" color={'#24e5fb'} />}
+            style={styles.button}
+            onPress={() => {
+              ref.current?.swipeBack();
+            }}
           />
           <SwipeButton
+            icon={<Entypo size={ICON_SIZE} name="heart" color={'#fa5eff'} />}
+            className="h-16 w-16 bg-white shadow-md shadow-pink-400"
+            style={styles.button}
             onPress={() => {
-              swipeDirection.value = 'right';
+              ref.current?.swipeRight();
             }}
-            className="h-16 w-16 bg-white shadow-md shadow-pink-400 "
-            icon={<Entypo size={swipeButtonActionSize} name="heart" color={'#fa5eff'} />}
           />
         </View>
 
@@ -291,5 +428,85 @@ const styles = StyleSheet.create({
     backgroundColor: '#efebfc',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flipCard: {
+    backfaceVisibility: 'hidden',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    bottom: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
+  },
+  button: {
+    height: 50,
+    borderRadius: 40,
+    aspectRatio: 1,
+    backgroundColor: '#3A3D45',
+    elevation: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: 'black',
+    shadowOpacity: 0.1,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+  renderCardContainer: {
+    borderRadius: 15,
+    width: '100%',
+    height: '100%',
+  },
+  renderFlippedCardContainer: {
+    borderRadius: 15,
+    backgroundColor: '#baeee5',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  cardStyle: {
+    width: '90%',
+    height: '90%',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  renderCardImage: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 15,
+  },
+  subContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -80,
+  },
+  overlayLabelContainer: {
+    borderRadius: 15,
+    height: '90%',
+    width: '90%',
+  },
+  text: {
+    color: '#001a72',
+  },
+  overlayLabelContainerStyle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
+    width: '90%',
+    height: '90%',
+    backgroundColor: 'rgba(239, 235, 252, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 15,
   },
 });

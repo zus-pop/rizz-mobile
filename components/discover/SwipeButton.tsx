@@ -1,14 +1,12 @@
+import { useEffect } from 'react';
 import { ViewProps } from 'react-native';
-import { Button } from '../ui/button';
 import Animated, {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
-import { useEffect } from 'react';
+import { Button } from '../ui/button';
 
 interface SwipeButtonProps extends ViewProps {
   icon: React.ReactNode;

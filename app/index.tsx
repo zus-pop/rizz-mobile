@@ -42,7 +42,7 @@ const OnBoarding: React.FC = () => {
   };
 
   const handleGetStarted = () => {
-    router.replace('/signin');
+    router.replace('/(tabs)/discover');
   };
 
   return (

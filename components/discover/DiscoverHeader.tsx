@@ -15,7 +15,7 @@ const DiscoverHeader = ({ onFilterPress, title }: DiscoverHeaderProps) => {
     <Animated.View
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
-      className="h-32 w-full flex-row items-center justify-between bg-transparent px-4"
+      className="h-28 w-full flex-row items-center justify-between bg-transparent px-4"
       pointerEvents="box-none">
       <AnimatedTouchOpacity
         onPress={() => console.log('Game controller pressed')}
