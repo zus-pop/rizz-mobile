@@ -1,7 +1,7 @@
 import { Text } from '@/components/ui/text';
 import { Profile } from '@/types/profile';
-import { AntDesign } from '@expo/vector-icons';
-import { Image, Pressable, TouchableOpacity, View } from 'react-native';
+import { Zocial } from '@expo/vector-icons';
+import { Image, TouchableOpacity, View } from 'react-native';
 import Animated, {
   runOnJS,
   SharedValue,
@@ -46,7 +46,16 @@ export default function FrontCard({ profile, onPress }: FrontCardProps) {
   };
 
   return (
-    <Animated.View className=" h-full w-full overflow-hidden rounded-2xl " style={{ elevation: 6 }}>
+    <Animated.View className="h-full w-full overflow-hidden rounded-2xl " style={{ elevation: 6 }}>
+      {/* SoundCloud Icon - Top Right */}
+      <TouchableOpacity
+        style={{ position: 'absolute', top: 16, right: 16, zIndex: 50, width: 60 }}
+        activeOpacity={0.7}
+        onPress={onPress}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <Zocial name="soundcloud" size={48} color="#fff" />
+      </TouchableOpacity>
+
       {/* Progress indicators */}
       <View className="absolute left-2 right-2 top-2 z-10 flex-row space-x-1">
         {profile.images.map((_, index) => (
@@ -108,19 +117,21 @@ export default function FrontCard({ profile, onPress }: FrontCardProps) {
       <View className="absolute bottom-0 left-0 right-0 h-1/5 bg-black/50" />
 
       {/* Text Overlay */}
-      <View className="absolute bottom-0 left-0 right-0 flex-row items-end justify-between p-5">
+      <View
+        style={{
+          bottom: 5,
+          left: 0,
+          right: 0,
+        }}
+        className="absolute z-10 flex-row items-end justify-between p-5">
         {/* Left side - Common info */}
         <View className="flex-1">
-          <Text className="mb-1 text-2xl font-bold text-white">
+          <Text className="mb-2 text-2xl font-bold text-white">
             {`${profile.firstName} ${profile.lastName}`}
           </Text>
           <Text className="text-lg text-white/90">Age: {profile.age}</Text>
         </View>
-
-        {/* Right side - View detail trigger */}
-        <TouchableOpacity className="ml-4 rounded-full p-3" activeOpacity={0.7} onPress={onPress}>
-          <AntDesign name="retweet" size={24} color="#fa5eff" />
-        </TouchableOpacity>
+        {/* Removed SoundCloud icon from here */}
       </View>
     </Animated.View>
   );

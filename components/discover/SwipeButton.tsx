@@ -11,9 +11,10 @@ import { Button } from '../ui/button';
 interface SwipeButtonProps extends ViewProps {
   icon: React.ReactNode;
   onPress: () => void;
+  isDisable: boolean;
 }
 
-const SwipeButton = ({ icon, onPress, ...props }: SwipeButtonProps) => {
+const SwipeButton = ({ icon, onPress, isDisable, ...props }: SwipeButtonProps) => {
   const scale = useSharedValue(0);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ const SwipeButton = ({ icon, onPress, ...props }: SwipeButtonProps) => {
   return (
     <Animated.View style={[animatedButtonStyle]}>
       <Button
+        isDisabled={isDisable}
         onPress={onPress}
         size="lg"
         className={`items-center justify-center rounded-full p-0 ${props.className ?? ''}`}>

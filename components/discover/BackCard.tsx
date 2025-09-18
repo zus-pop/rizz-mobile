@@ -1,7 +1,6 @@
 import { Text } from '@/components/ui/text';
 import { Profile } from '@/types/profile';
-import { AntDesign } from '@expo/vector-icons';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
@@ -12,13 +11,10 @@ import Animated, {
 import Carousel from 'react-native-reanimated-carousel';
 
 export default function BackCard({
-  onPress,
   profile,
   width,
   height,
-  autoPlay = true,
 }: {
-  onPress: () => void;
   profile: Profile;
   width?: number;
   height?: number;
@@ -39,9 +35,6 @@ export default function BackCard({
     });
   };
 
-  // Calculate carousel height based on the image section height (45% of card height)
-  const carouselHeight = height ? height * 0.45 : 200;
-
   return (
     <View style={[backCardStyles.card, width && height ? { width, height } : {}]}>
       <View style={backCardStyles.imageSection}>
@@ -58,9 +51,7 @@ export default function BackCard({
         {/* Image carousel */}
         <Carousel
           loop
-          autoPlay={autoPlay}
-          autoPlayInterval={4000}
-          width={320}
+          width={360}
           data={profile.images}
           onSnapToItem={(index) => {
             currentImageIndex.value = index;
@@ -72,11 +63,6 @@ export default function BackCard({
             </View>
           )}
         />
-
-        {/* Flip button */}
-        <TouchableOpacity style={backCardStyles.closeButton} onPress={onPress} activeOpacity={0.7}>
-          <AntDesign name="sync" size={20} color="white" />
-        </TouchableOpacity>
       </View>
 
       {/* Details Section */}
@@ -190,8 +176,8 @@ const backCardStyles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 120, // Increased padding to ensure scrollable content
-    flexGrow: 1, // Ensure content can grow
+    paddingBottom: 200, // Increased padding to ensure scrollable content
+    flexGrow: 1, // Ensure content can grow,
   },
   name: {
     fontSize: 26,

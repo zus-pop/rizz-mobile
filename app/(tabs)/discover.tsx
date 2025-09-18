@@ -1,5 +1,6 @@
 import { fetchProfiles } from '@/api/profile';
 import AnimatedSwitch from '@/components/AnimatedSwitch';
+import { customToast } from '@/components/CustomToast';
 import BackCard from '@/components/discover/BackCard';
 import DiscoverHeader from '@/components/discover/DiscoverHeader';
 import FrontCard from '@/components/discover/FrontCard';
@@ -11,6 +12,7 @@ import {
   BottomSheetView,
   CustomBackdrop,
 } from '@/components/ui/bottom-sheet';
+import { Profile } from '@/types/profile';
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +22,6 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
 import { Swiper, SwiperCardRefType } from 'rn-swiper-list';
-import { Profile } from '../../types/profile';
 const ICON_SIZE = 24;
 export default function Discover() {
   const lookingForOptions = useMemo(
@@ -54,6 +55,12 @@ export default function Discover() {
     }
   }, [data, isLoadingNextPage]);
 
+  useEffect(() => {
+    if (isLoadingNextPage) {
+      customToast.info('Fetching...');
+    }
+  }, [isLoadingNextPage]);
+
   const enableDeviceMotion = useSharedValue<boolean>(false);
 
   // Bottom sheet reference
@@ -77,30 +84,47 @@ export default function Discover() {
     return <FrontCard profile={profile} onPress={() => {}} />;
   }, []);
   const renderFlippedCard = useCallback((profile: Profile) => {
-    return <BackCard profile={profile} onPress={() => {}} />;
+    return <BackCard profile={profile} />;
   }, []);
   const OverlayLabelRight = useCallback(() => {
     return (
-      <View
-        style={[
-          styles.overlayLabelContainer,
-          {
-            backgroundColor: 'green',
-          },
-        ]}
-      />
+      <View style={[styles.overlayLabelContainer]}>
+        <View style={[styles.overlayIconContainer, styles.overlayLabelRight]}>
+          <View style={{ position: 'relative', alignItems: 'center' }}>
+            {/* Shadow text layer */}
+            <Text style={[styles.overlayTextShadow, styles.overlayTextShadowRight]}>LIKE</Text>
+
+            {/* Multi-colored text using character-by-character styling */}
+            <View style={styles.multiColorTextContainer}>
+              <Text style={[styles.overlayTextChar, styles.overlayTextRightChar1]}>L</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextRightChar2]}>I</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextRightChar3]}>K</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextRightChar4]}>E</Text>
+            </View>
+          </View>
+        </View>
+      </View>
     );
   }, []);
+
   const OverlayLabelLeft = useCallback(() => {
     return (
-      <View
-        style={[
-          styles.overlayLabelContainer,
-          {
-            backgroundColor: 'red',
-          },
-        ]}
-      />
+      <View style={[styles.overlayLabelContainer]}>
+        <View style={[styles.overlayIconContainer, styles.overlayLabelLeft]}>
+          <View style={{ position: 'relative', alignItems: 'center' }}>
+            {/* Shadow text layer */}
+            <Text style={[styles.overlayTextShadow, styles.overlayTextShadowLeft]}>NOPE</Text>
+
+            {/* Multi-colored text using character-by-character styling */}
+            <View style={styles.multiColorTextContainer}>
+              <Text style={[styles.overlayTextChar, styles.overlayTextLeftChar1]}>N</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextLeftChar2]}>O</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextLeftChar3]}>P</Text>
+              <Text style={[styles.overlayTextChar, styles.overlayTextLeftChar4]}>E</Text>
+            </View>
+          </View>
+        </View>
+      </View>
     );
   }, []);
 
@@ -124,9 +148,7 @@ export default function Discover() {
         <DiscoverHeader title="Discover" onFilterPress={handlePresentFilterSheet} />
         <View style={styles.subContainer} pointerEvents="box-none">
           {isLoadingNextPage ? (
-            <View style={styles.loadingContainer}>
-              <Loading scale={0.6} />
-            </View>
+            <Loading scale={0.5} />
           ) : (
             <Swiper
               ref={ref}
@@ -140,19 +162,19 @@ export default function Discover() {
               renderCard={renderCard}
               // Animation configs for smoother swipes - increased stiffness, reduced damping
               swipeRightSpringConfig={{
-                stiffness: 180,
+                stiffness: 300,
                 damping: 8,
                 mass: 0.4,
                 overshootClamping: false,
               }}
               swipeLeftSpringConfig={{
-                stiffness: 180,
+                stiffness: 300,
                 damping: 8,
                 mass: 0.4,
                 overshootClamping: false,
               }}
               swipeTopSpringConfig={{
-                stiffness: 180,
+                stiffness: 300,
                 damping: 8,
                 mass: 0.4,
                 overshootClamping: false,
@@ -164,7 +186,7 @@ export default function Discover() {
                 overshootClamping: false,
               }}
               // Enable velocity-based swiping - lower threshold for faster response
-              swipeVelocityThreshold={200}
+              swipeVelocityThreshold={1200}
               // Improve swipe back animation - more responsive
               swipeBackXSpringConfig={{
                 stiffness: 200,
@@ -188,8 +210,8 @@ export default function Discover() {
               onSwipeRight={(cardIndex) => {
                 console.log('cardIndex', cardIndex);
               }}
-              onPress={() => {
-                console.log('onPress');
+              onSwipeLeft={(cardIndex) => {
+                console.log('onSwipeLeft', cardIndex);
               }}
               onSwipedAll={() => {
                 console.log('All cards swiped, fetching next page...');
@@ -210,50 +232,31 @@ export default function Discover() {
               // Flip animation props
               direction="y"
               flipDuration={350} // Faster flip for smoother experience
-              onSwipeLeft={(cardIndex) => {
-                console.log('onSwipeLeft', cardIndex);
-              }}
-              onSwipeTop={(cardIndex) => {
-                console.log('onSwipeTop', cardIndex);
-              }}
-              onSwipeBottom={(cardIndex) => {
-                console.log('onSwipeBottom', cardIndex);
-              }}
               OverlayLabelRight={OverlayLabelRight}
               OverlayLabelLeft={OverlayLabelLeft}
-              // OverlayLabelTop={OverlayLabelTop}
-              // OverlayLabelBottom={OverlayLabelBottom}
-              // Overlay animation configs - more responsive transitions
-              inputOverlayLabelRightOpacityRange={[0, 60]}
+              inputOverlayLabelRightOpacityRange={[0, 40]}
               outputOverlayLabelRightOpacityRange={[0, 1]}
-              inputOverlayLabelLeftOpacityRange={[0, -60]}
+              inputOverlayLabelLeftOpacityRange={[0, -40]}
               outputOverlayLabelLeftOpacityRange={[0, 1]}
-              inputOverlayLabelTopOpacityRange={[0, -60]}
+              inputOverlayLabelTopOpacityRange={[0, -40]}
               outputOverlayLabelTopOpacityRange={[0, 1]}
-              inputOverlayLabelBottomOpacityRange={[0, 60]}
+              inputOverlayLabelBottomOpacityRange={[0, 40]}
               outputOverlayLabelBottomOpacityRange={[0, 1]}
-              onSwipeActive={() => {
-                console.log('onSwipeActive');
-              }}
-              onSwipeStart={() => {
-                console.log('onSwipeStart');
-              }}
-              onSwipeEnd={() => {
-                console.log('onSwipeEnd');
-              }}
             />
           )}
         </View>
         <View style={styles.buttonsContainer}>
           <SwipeButton
-            icon={<AntDesign name="retweet" size={24} color="#fa5eff" />}
-            className="h-16 w-16 bg-white shadow-md shadow-red-400"
+            isDisable={isLoadingNextPage}
+            icon={<AntDesign name="sync" size={24} color="#fa5eff" />}
+            className="h-16 w-16 bg-white shadow-md shadow-purple-400"
             style={styles.button}
             onPress={() => {
               ref.current?.flipCard();
             }}
           />
           <SwipeButton
+            isDisable={isLoadingNextPage}
             icon={<Entypo size={ICON_SIZE} name="cross" color={'#fb3224'} />}
             // style={styles.button}
             className="h-16 w-16 bg-white shadow-md shadow-red-400"
@@ -262,6 +265,7 @@ export default function Discover() {
             }}
           />
           <SwipeButton
+            isDisable={isLoadingNextPage}
             icon={<Entypo size={ICON_SIZE} name="back" color={'#24e5fb'} />}
             className="h-16 w-16 bg-white shadow-md shadow-cyan-400"
             style={styles.button}
@@ -270,6 +274,7 @@ export default function Discover() {
             }}
           />
           <SwipeButton
+            isDisable={isLoadingNextPage}
             icon={<Entypo size={ICON_SIZE} name="heart" color={'#fa5eff'} />}
             className="h-16 w-16 bg-white shadow-md shadow-pink-400"
             style={styles.button}
@@ -472,7 +477,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cardStyle: {
-    width: '90%',
+    width: '95%',
     height: '90%',
     borderRadius: 15,
     justifyContent: 'center',
@@ -488,11 +493,144 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -80,
+    width: '100%',
   },
   overlayLabelContainer: {
-    borderRadius: 15,
-    height: '90%',
-    width: '90%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+    // Remove the transform that was causing positioning issues
+  },
+  overlayLabelRight: {
+    transform: [{ rotate: '12deg' }], // Slight rotation
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 220,
+    height: 70,
+  },
+  overlayLabelLeft: {
+    transform: [{ rotate: '-12deg' }], // Slight rotation
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 220,
+    height: 70,
+  },
+  overlayIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    position: 'relative', // Required for absolute positioning of the text shadow
+    flexDirection: 'column', // Stack shadow and color text vertically
+    alignSelf: 'center',
+  },
+  overlayText: {
+    fontSize: 52,
+    fontWeight: '900',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    includeFontPadding: false, // Tighter text layout
+    padding: 0,
+    margin: 0,
+  },
+  overlayTextRight: {
+    color: '#3dd978', // Vibrant green
+    textShadowColor: '#1a9c4a',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
+    // 3D text effect
+    elevation: 10,
+  },
+  overlayTextLeft: {
+    color: '#ff3b30', // Vibrant red
+    textShadowColor: '#c0392b',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 5,
+    // 3D text effect
+    elevation: 10,
+  },
+  overlayTextShadow: {
+    position: 'absolute',
+    fontSize: 52,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    opacity: 0.25, // Subtle shadow effect
+    zIndex: -1,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  overlayTextShadowRight: {
+    color: '#1a9c4a', // Darker green
+    top: 3,
+    left: 0,
+    transform: [{ scale: 1.05 }], // Slightly larger for better shadow effect
+  },
+  overlayTextShadowLeft: {
+    color: '#c0392b', // Darker red
+    top: 3,
+    left: 0,
+    transform: [{ scale: 1.05 }], // Slightly larger for better shadow effect
+  },
+  multiColorTextContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    alignSelf: 'center',
+    width: '100%',
+  },
+  overlayTextChar: {
+    fontSize: 52,
+    fontWeight: '900',
+    letterSpacing: 0, // We're handling spacing manually with each character
+    textTransform: 'uppercase',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
+    includeFontPadding: false,
+    padding: 0,
+    margin: 0,
+  },
+  // Right (LIKE) text character colors
+  overlayTextRightChar1: {
+    color: '#3dd978', // Green
+    textShadowColor: '#1a9c4a',
+  },
+  overlayTextRightChar2: {
+    color: '#50e991', // Lighter green
+    textShadowColor: '#2abd6e',
+  },
+  overlayTextRightChar3: {
+    color: '#3dd978', // Green
+    textShadowColor: '#1a9c4a',
+  },
+  overlayTextRightChar4: {
+    color: '#50e991', // Lighter green
+    textShadowColor: '#2abd6e',
+  },
+  // Left (NOPE) text character colors
+  overlayTextLeftChar1: {
+    color: '#ff3b30', // Red
+    textShadowColor: '#c0392b',
+  },
+  overlayTextLeftChar2: {
+    color: '#ff6b61', // Lighter red
+    textShadowColor: '#d35400',
+  },
+  overlayTextLeftChar3: {
+    color: '#ff3b30', // Red
+    textShadowColor: '#c0392b',
+  },
+  overlayTextLeftChar4: {
+    color: '#ff6b61', // Lighter red
+    textShadowColor: '#d35400',
   },
   text: {
     color: '#001a72',
@@ -500,6 +638,14 @@ const styles = StyleSheet.create({
   overlayLabelContainerStyle: {
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   loadingContainer: {
     width: '90%',
