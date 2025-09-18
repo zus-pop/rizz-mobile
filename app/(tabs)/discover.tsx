@@ -1,47 +1,32 @@
 import { fetchProfiles } from '@/api/profile';
-import AnimatedSwitch from '@/components/AnimatedSwitch';
 import { customToast } from '@/components/CustomToast';
 import BackCard from '@/components/discover/BackCard';
 import DiscoverHeader from '@/components/discover/DiscoverHeader';
 import FrontCard from '@/components/discover/FrontCard';
 import SwipeButton from '@/components/discover/SwipeButton';
 import Loading from '@/components/Loading';
-import {
-  BottomSheetHandle,
-  BottomSheetModal,
-  BottomSheetView,
-  CustomBackdrop,
-} from '@/components/ui/bottom-sheet';
+import { useFilterStore } from '@/store/filterStore';
 import { Profile } from '@/types/profile';
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons';
-import { LegendList } from '@legendapp/list';
+import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { router, Stack } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Swiper, SwiperCardRefType } from 'rn-swiper-list';
 const ICON_SIZE = 24;
+
 export default function Discover() {
-  const lookingForOptions = useMemo(
-    () => ['Long-term relationship', 'Something casual', 'New friends', 'Still figuring it out'],
-    []
-  );
-  const interests = useMemo(
-    () => ['Music', 'Travel', 'Photography', 'Sports', 'Art', 'Food', 'Movies', 'Gaming'],
-    []
-  );
+  // Filter state from Zustand store
+  const filters = useFilterStore((state) => state.filters);
 
   // Current page state
   const [currentPage, setCurrentPage] = useState(1);
   // Track when we're loading the next page separately
-  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
-
-  // Fetch profiles with simple useQuery
+  const [isLoadingNextPage, setIsLoadingNextPage] = useState(false); // Fetch profiles with simple useQuery
   const { data, refetch, isLoading } = useQuery({
-    queryKey: ['profiles', currentPage],
-    queryFn: () => fetchProfiles(currentPage),
+    queryKey: ['profiles', currentPage, filters],
+    queryFn: () => fetchProfiles(currentPage, filters),
     staleTime: 30 * 1000,
   });
 
@@ -61,28 +46,17 @@ export default function Discover() {
     }
   }, [isLoadingNextPage]);
 
-  const enableDeviceMotion = useSharedValue<boolean>(false);
-
-  // Bottom sheet reference
-  const filterBottomSheetRef = useRef<BottomSheetModal>(null);
-
-  // Bottom sheet snap points
-  const snapPoints = useMemo(() => ['75%'], []);
-
-  // Bottom sheet handlers
+  // Filter handler - navigate to filter screen
   const handlePresentFilterSheet = useCallback(() => {
-    filterBottomSheetRef.current?.present();
-  }, []);
-
-  const handleCloseFilterSheet = useCallback(() => {
-    filterBottomSheetRef.current?.dismiss();
+    router.push('/filter');
   }, []);
 
   const ref = useRef<SwiperCardRefType>(null);
 
   const renderCard = useCallback((profile: Profile) => {
-    return <FrontCard profile={profile} onPress={() => {}} />;
+    return <FrontCard profile={profile} />;
   }, []);
+
   const renderFlippedCard = useCallback((profile: Profile) => {
     return <BackCard profile={profile} />;
   }, []);
@@ -129,8 +103,9 @@ export default function Discover() {
   }, []);
 
   // Only show full page loading for first load (page 1)
-  if ((isLoading && currentPage === 1) || (!data?.profiles && !isLoadingNextPage))
+  if (isLoading && currentPage === 1) {
     return <Loading scale={0.6} />;
+  }
 
   return (
     <>
@@ -145,18 +120,23 @@ export default function Discover() {
         entering={FadeIn.duration(300)}
         exiting={FadeOut.duration(300)}
         style={styles.container}>
-        <DiscoverHeader title="Discover" onFilterPress={handlePresentFilterSheet} />
+        {/* Header is positioned with higher zIndex to ensure it's clickable */}
+        <View style={styles.headerContainer}>
+          <DiscoverHeader title="Discover" onFilterPress={handlePresentFilterSheet} />
+        </View>
         <View style={styles.subContainer} pointerEvents="box-none">
           {isLoadingNextPage ? (
             <Loading scale={0.5} />
-          ) : (
+          ) : data?.profiles && data.profiles.length > 0 ? (
             <Swiper
               ref={ref}
               disableTopSwipe
               disableBottomSwipe
+              disableLeftSwipe={false}
+              disableRightSwipe={false}
               keyExtractor={(item) => item.firstName + item.lastName}
               key={`swiper-page-${currentPage}`} // Only re-render when page changes
-              data={data?.profiles || []}
+              data={data.profiles}
               cardStyle={styles.cardStyle}
               overlayLabelContainerStyle={styles.overlayLabelContainerStyle}
               renderCard={renderCard}
@@ -227,7 +207,7 @@ export default function Discover() {
                   setCurrentPage(1);
                 }
               }}
-              prerenderItems={3} // Prerender more items for smoother transitions
+              prerenderItems={2} // Prerender more items for smoother transitions
               FlippedContent={renderFlippedCard}
               // Flip animation props
               direction="y"
@@ -243,6 +223,22 @@ export default function Discover() {
               inputOverlayLabelBottomOpacityRange={[0, 40]}
               outputOverlayLabelBottomOpacityRange={[0, 1]}
             />
+          ) : (
+            <Animated.View entering={FadeIn.duration(600)} style={styles.emptyStateContainer}>
+              <AntDesign name="search1" size={64} color="#8b5cf6" style={styles.emptyStateIcon} />
+              <Text style={styles.emptyStateTitle}>No profiles found</Text>
+              <Text style={styles.emptyStateText}>
+                Try adjusting your filters or check back later for new matches
+              </Text>
+              <TouchableOpacity
+                style={styles.refreshButton}
+                onPress={() => {
+                  setCurrentPage(1);
+                  refetch();
+                }}>
+                <Text style={styles.refreshButtonText}>Try Again</Text>
+              </TouchableOpacity>
+            </Animated.View>
           )}
         </View>
         <View style={styles.buttonsContainer}>
@@ -258,7 +254,6 @@ export default function Discover() {
           <SwipeButton
             isDisable={isLoadingNextPage}
             icon={<Entypo size={ICON_SIZE} name="cross" color={'#fb3224'} />}
-            // style={styles.button}
             className="h-16 w-16 bg-white shadow-md shadow-red-400"
             onPress={() => {
               ref.current?.swipeLeft();
@@ -283,145 +278,6 @@ export default function Discover() {
             }}
           />
         </View>
-
-        {/* Filter Bottom Sheet */}
-        <BottomSheetModal
-          ref={filterBottomSheetRef}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
-          backdropComponent={(props) => (
-            <CustomBackdrop {...props} onPress={handleCloseFilterSheet} />
-          )}
-          backgroundStyle={{ backgroundColor: '#f9fafb' }}
-          handleComponent={BottomSheetHandle}
-          keyboardBehavior="interactive"
-          keyboardBlurBehavior="restore"
-          android_keyboardInputMode="adjustResize">
-          <BottomSheetView className="flex-1">
-            {/* Header - Fixed */}
-            <View className="mb-4 flex-row items-center justify-between px-6 pt-4">
-              <Text className="text-2xl font-bold text-gray-900">Filters</Text>
-              <TouchableOpacity
-                onPress={handleCloseFilterSheet}
-                className="rounded-full bg-gray-200 p-2">
-                <MaterialIcons name="close" size={20} color="#374151" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Scrollable Content - Lazy render */}
-            <ScrollView
-              className="px-4"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 32 }}
-              bounces={true}
-              overScrollMode="auto"
-              nestedScrollEnabled={true}
-              keyboardShouldPersistTaps="handled">
-              {/* Age Range Section */}
-              <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold text-gray-800">Age Range</Text>
-                <View className="rounded-lg bg-white p-4 shadow-sm">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-600">18</Text>
-                    <View className="mx-4 h-1 flex-1 rounded bg-purple-200">
-                      <View className="h-1 w-1/2 rounded bg-purple-500" />
-                    </View>
-                    <Text className="text-gray-600">50</Text>
-                  </View>
-                  <Text className="mt-2 text-center text-sm text-gray-500">18 - 35 years old</Text>
-                </View>
-              </View>
-
-              {/* Distance Section */}
-              <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold text-gray-800">Distance</Text>
-                <View className="rounded-lg bg-white p-4 shadow-sm">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-600">1 km</Text>
-                    <View className="mx-4 h-1 flex-1 rounded bg-purple-200">
-                      <View className="h-1 w-3/4 rounded bg-purple-500" />
-                    </View>
-                    <Text className="text-gray-600">100 km</Text>
-                  </View>
-                  <Text className="mt-2 text-center text-sm text-gray-500">Within 25 km</Text>
-                </View>
-              </View>
-
-              {/* Interests Section */}
-              <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold text-gray-800">Interests</Text>
-                <View className="flex-row flex-wrap gap-2">
-                  <LegendList
-                    data={interests}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item: interest }) => (
-                      <TouchableOpacity
-                        key={interest}
-                        className="mb-2 mr-2 rounded-full border border-purple-200 bg-white px-4 py-2">
-                        <Text className="text-purple-600">{interest}</Text>
-                      </TouchableOpacity>
-                    )}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    contentContainerStyle={{ flexGrow: 1 }}
-                  />
-                </View>
-              </View>
-              {/* Enable Device Motion Section */}
-              <View className="mb-4">
-                <View className="flex-row items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm">
-                  <Text className="text-lg font-semibold text-gray-800">Device Motion</Text>
-                  <AnimatedSwitch
-                    value={enableDeviceMotion}
-                    onPress={() => {
-                      enableDeviceMotion.value = !enableDeviceMotion.value;
-                    }}
-                    trackColors={{
-                      off: '#d1d5db',
-                      on: '#a78bfa',
-                    }}
-                    duration={300}
-                  />
-                </View>
-                <Text className="ml-1 mt-1 text-sm text-gray-500">
-                  Tilt your phone to swipe cards.
-                </Text>
-              </View>
-              {/* Looking For Section */}
-              <View className="mb-6">
-                <Text className="mb-3 text-lg font-semibold text-gray-800">Looking For</Text>
-                <View className="space-y-2">
-                  <LegendList
-                    data={lookingForOptions}
-                    keyExtractor={(item) => item}
-                    renderItem={({ item: option }) => (
-                      <TouchableOpacity className="flex-row items-center rounded-lg bg-white p-4 shadow-sm">
-                        <View className="mr-3 h-5 w-5 rounded-full border-2 border-purple-300" />
-                        <Text className="text-gray-700">{option}</Text>
-                      </TouchableOpacity>
-                    )}
-                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                    scrollEnabled={false}
-                  />
-                </View>
-              </View>
-
-              {/* Action Buttons */}
-              <View className="mb-8 flex-row gap-4">
-                <TouchableOpacity
-                  onPress={handleCloseFilterSheet}
-                  className="flex-1 rounded-lg border border-gray-300 bg-white py-3">
-                  <Text className="text-center font-semibold text-gray-700">Clear All</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleCloseFilterSheet}
-                  className="flex-1 rounded-lg bg-purple-500 py-3">
-                  <Text className="text-center font-semibold text-white">Apply Filters</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </BottomSheetView>
-        </BottomSheetModal>
       </Animated.View>
     </>
   );
@@ -488,11 +344,18 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 15,
   },
+  headerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10, // Higher zIndex ensures it stays on top and is clickable
+  },
   subContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -80,
+    paddingTop: 40, // Instead of negative margin, use padding to avoid overlap
     width: '100%',
   },
   overlayLabelContainer: {
@@ -654,5 +517,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 15,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    marginTop: -80, // Same as subContainer
+  },
+  emptyStateIcon: {
+    alignSelf: 'center',
+    marginBottom: 24,
+    opacity: 0.8,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#374151',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  refreshButton: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 10,
+    shadowColor: '#8b5cf6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  refreshButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

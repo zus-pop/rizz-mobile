@@ -3,18 +3,18 @@ import '@/global.css';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
+import { LocationProvider, NotificationProvider } from '@/providers';
+import { useReactQueryDevTools } from '@dev-plugins/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as Notifications from 'expo-notifications';
 import { Stack } from 'expo-router';
+import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Toaster } from 'sonner-native';
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: 'index',
 };
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useReactQueryDevTools } from '@dev-plugins/react-query';
-import { LocationProvider, NotificationProvider } from '@/providers';
-import * as Notifications from 'expo-notifications';
-import { StatusBar } from 'react-native';
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 const queryClient = new QueryClient();
@@ -46,6 +46,19 @@ export default function RootLayout() {
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="profile-details" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="filter"
+                    options={{
+                      headerShown: true,
+                      headerTitle: 'Filters',
+                      animation: 'slide_from_bottom',
+                      presentation: 'modal',
+                      headerStyle: { backgroundColor: '#f9fafb' },
+                      headerTintColor: '#fa5eff',
+                      headerShadowVisible: false,
+                      headerTitleStyle: { fontWeight: '600' },
+                    }}
+                  />
                 </Stack>
                 <Toaster swipeToDismissDirection="up" />
               </BottomSheetModalProvider>

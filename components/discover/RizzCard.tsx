@@ -282,20 +282,12 @@ const RizzCard = ({
           <FlipCard
             isFlipped={isFlipped}
             cardStyle={styles.flipCard}
-            RegularContent={
-              <FrontCard
-                currentIndex={currentIndex}
-                index={index}
-                onPress={onPress}
-                profile={profile}
-              />
-            }
+            RegularContent={<FrontCard profile={profile} />}
             FlippedContent={
               <BackCard
                 width={CARD_WIDTH}
                 height={CARD_HEIGHT}
                 profile={profile}
-                onPress={onPress}
                 currentIndex={currentIndex}
                 index={index}
               />

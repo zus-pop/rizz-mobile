@@ -8,4 +8,5 @@ export interface Profile {
   distance: string;
   age: number;
   images: string[];
+  audioUrl?: string | null; // SoundCloud or other audio URL
 }
