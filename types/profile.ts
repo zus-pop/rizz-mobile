@@ -10,3 +10,5 @@ export interface Profile {
   images: string[];
   audioUrl?: string | null; // SoundCloud or other audio URL
 }
+
+export type QuestionType = 'details' | 'preferences';

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StatusBar } from 'react-native';
-import { router } from 'expo-router';
+import { CustomInput } from '@/components/ui/CustomInput';
+import { DatePickerInput } from '@/components/ui/DatePickerInput';
+import { UniversitySelect } from '@/components/ui/UniversitySelect';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { CustomInput } from '~/components/ui/CustomInput';
-import { DatePickerInput } from '~/components/ui/DatePickerInput';
-import { UniversitySelect } from '~/components/ui/UniversitySelect';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileDetailsScreen() {
@@ -34,7 +34,7 @@ export default function ProfileDetailsScreen() {
       selectedDate,
     });
     // Navigate to next screen or update profile
-    router.back();
+    router.push;
   };
 
   const handleSkip = () => {

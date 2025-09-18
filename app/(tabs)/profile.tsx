@@ -1,12 +1,11 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useFilterStore } from '@/store/filterStore';
-import ProfileImageGrid from '@/components/profile/ProfileImageGrid';
 import ProfileDetailsSection from '@/components/profile/ProfileDetailsSection';
-import * as MediaLibrary from 'expo-media-library';
+import ProfileImageGrid from '@/components/profile/ProfileImageGrid';
+import { useFilterStore } from '@/store/filterStore';
+import { pickImageFromLibrary } from '@/utils/image-picker';
+import { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { ScrollView } from 'react-native-gesture-handler';
 
 // ProfileImage interface
@@ -24,40 +23,20 @@ export default function ProfileScreen() {
   // Get filter data for details
   const { filters } = useFilterStore();
 
-  // Add image handler using expo-media-library
+  // Add image handler using expo-image-picker
   const handleAddImage = async () => {
     if (images.length >= 6) return;
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access media library is required!');
-      return;
-    }
-    const result = await MediaLibrary.getAssetsAsync({ mediaType: 'photo', first: 30 });
-    if (result.assets.length === 0) {
-      alert('No images found in your library.');
-      return;
-    }
-    const picked = result.assets[0];
-    if (picked && picked.uri) {
-      setImages((prev) => [...prev, { url: picked.uri, order: prev.length }]);
+    const uri = await pickImageFromLibrary();
+    if (uri) {
+      setImages((prev) => [...prev, { url: uri, order: prev.length }]);
     }
   };
 
-  // Replace image handler using expo-media-library and API
+  // Replace image handler using expo-image-picker
   const handleReplaceImage = async (idx: number) => {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access media library is required!');
-      return;
-    }
-    const result = await MediaLibrary.getAssetsAsync({ mediaType: 'photo', first: 30 });
-    if (result.assets.length === 0) {
-      alert('No images found in your library.');
-      return;
-    }
-    const picked = result.assets[0];
-    if (picked && picked.uri) {
-      setImages((imgs) => imgs.map((img, i) => (i === idx ? { ...img, url: picked.uri } : img)));
+    const uri = await pickImageFromLibrary();
+    if (uri) {
+      setImages((imgs) => imgs.map((img, i) => (i === idx ? { ...img, url: uri } : img)));
     }
   };
 

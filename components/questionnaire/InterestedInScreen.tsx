@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { toGender } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
+import { QuestionType } from '@/types/profile';
 
 interface InterestedInScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -27,9 +28,10 @@ export default function InterestedInScreen({
       totalSteps={totalSteps}
       disabledNext={!selectedGender}
       onBack={onBack}
-      onNext={() => onNext(selectedGender)}>
+      onNext={() => onNext(selectedGender, 'preferences')}>
       <LegendList
         data={toGender}
+        key={selectedGender}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <OptionButton
@@ -37,7 +39,6 @@ export default function InterestedInScreen({
             isSelected={selectedGender === item.value}
             onPress={() => setSelectedGender(item.value)}
             showCheckIcon={item.showCheckIcon}
-            showArrowIcon={item.showArrowIcon}
           />
         )}
         contentContainerStyle={{ gap: 16 }}

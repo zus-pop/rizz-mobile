@@ -3,7 +3,7 @@ import { useAudio } from '@/hooks/useAudio';
 import { Profile } from '@/types/profile';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, Pressable, TouchableOpacity, View } from 'react-native';
+import { Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -11,19 +11,18 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import AudioModal from '../ui/AudioModal';
-
+import FastImage from '@d11/react-native-fast-image';
 interface FrontCardProps {
   profile: Profile;
 }
 
-export default function FrontCard(props: FrontCardProps) {
-  const { profile } = props;
+export default function FrontCard({ profile }: FrontCardProps) {
+  const [audioModalVisible, setAudioModalVisible] = useState(false);
 
   // Initialize audio hook for this card
   const { play, pause, playerStatus, setAudioSource } = useAudio();
 
   // Modal state
-  const [audioModalVisible, setAudioModalVisible] = useState(false);
 
   const currentImageIndex = useSharedValue(0);
   const imageCount = profile.images.length;
@@ -146,8 +145,9 @@ export default function FrontCard(props: FrontCardProps) {
 
           return (
             <Animated.View key={index} style={imageAnimatedStyle}>
-              <Image
-                source={{ uri: imageSource }}
+              <FastImage
+                resizeMode={FastImage.resizeMode.cover}
+                source={{ uri: imageSource, priority: FastImage.priority.high }}
                 style={{ flex: 1, width: '100%', height: '100%' }}
               />
             </Animated.View>

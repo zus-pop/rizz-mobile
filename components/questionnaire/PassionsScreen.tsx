@@ -1,19 +1,13 @@
-import {
-  FontAwesome,
-  FontAwesome5,
-  FontAwesome6,
-  Ionicons,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
+import { interests } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import InterestChip from './InterestChip';
 import QuestionnaireLayout from './QuestionnaireLayout';
-import { interests } from '../../constants/input';
 
 interface PassionsScreenProps {
-  onNext: (selections: string[]) => void;
+  onNext: (selections: string[], type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -38,7 +32,6 @@ export default function PassionsScreen({
   };
 
   const isSelected = (interest: string) => selectedInterests.includes(interest);
-
   return (
     <QuestionnaireLayout
       title="Your passions"
@@ -56,10 +49,11 @@ export default function PassionsScreen({
       totalSteps={totalSteps}
       disabledNext={selectedInterests.length < 3}
       onBack={onBack}
-      onNext={() => onNext(selectedInterests)}>
+      onNext={() => onNext(selectedInterests, 'details')}>
       {/* Interests Grid */}
       <LegendList
         data={interests}
+        key={selectedInterests.length}
         keyExtractor={(item) => item.id}
         columnWrapperStyle={{ gap: 8 }}
         ItemSeparatorComponent={() => <View className="h-2" />}

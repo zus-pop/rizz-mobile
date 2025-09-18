@@ -1,12 +1,13 @@
+import { lookingForOptions } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { lookingForOptions } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 
 interface LookingForScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -27,9 +28,10 @@ export default function LookingForScreen({
       totalSteps={totalSteps}
       disabledNext={!selectedOption}
       onBack={onBack}
-      onNext={() => onNext(selectedOption)}>
+      onNext={() => onNext(selectedOption, 'preferences')}>
       <View className="space-y-4">
         <LegendList
+          key={selectedOption}
           data={lookingForOptions}
           ItemSeparatorComponent={() => <View className="h-4" />}
           keyExtractor={(item) => item.id}

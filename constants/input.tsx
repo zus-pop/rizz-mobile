@@ -1,3 +1,10 @@
+import {
+  FontAwesome,
+  FontAwesome5,
+  FontAwesome6,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 export const loveLanguageOptions = [
   { id: 'english', name: 'English' },
   { id: 'spanish', name: 'Spanish' },
@@ -39,14 +46,6 @@ export const universityOptions = [
   // Add more as needed
 ];
 // Centralized options for interests and lookingFor
-
-import {
-  FontAwesome,
-  FontAwesome5,
-  FontAwesome6,
-  Ionicons,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
 
 export const interests = [
   {
@@ -191,7 +190,7 @@ export const iAm = [
 export const toGender = [
   { id: 'Woman', text: 'Woman', value: 'Woman', showCheckIcon: true },
   { id: 'Man', text: 'Man', value: 'Man', showCheckIcon: true },
-  { id: 'Other', text: 'Choose another', value: 'Other', showArrowIcon: true },
+  //   { id: 'Other', text: 'Choose another', value: 'Other', showArrowIcon: true },
 ];
 
 export const preferring = [

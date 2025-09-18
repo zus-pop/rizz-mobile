@@ -1,12 +1,13 @@
+import { studyStyle } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
+import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
-import { LegendList } from '@legendapp/list';
-import { studyStyle } from '../../constants/input';
 
 interface StudyStyleScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -27,9 +28,10 @@ export default function StudyStyleScreen({
       totalSteps={totalSteps}
       disabledNext={!selectedOption}
       onBack={onBack}
-      onNext={() => onNext(selectedOption)}>
+      onNext={() => onNext(selectedOption, 'details')}>
       <View className="space-y-4">
         <LegendList
+          key={selectedOption}
           data={studyStyle}
           ItemSeparatorComponent={() => <View className="h-4" />}
           keyExtractor={(item) => item.id}

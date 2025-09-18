@@ -64,7 +64,6 @@ export default function RootLayout() {
                     options={{
                       headerShown: true,
                       headerTitle: 'Settings',
-                      presentation: 'modal',
                       headerTintColor: '#fa5eff',
                       headerShadowVisible: false,
                       headerTitleStyle: { fontWeight: '600', fontSize: 30 },

@@ -1,12 +1,13 @@
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { afterGraduation } from '../../constants/input';
+import { afterGraduation } from '@/constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
+import { QuestionType } from '@/types/profile';
 
 interface AfterGraduationScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -27,9 +28,10 @@ export default function AfterGraduationScreen({
       totalSteps={totalSteps}
       disabledNext={!selectedOption}
       onBack={onBack}
-      onNext={() => onNext(selectedOption)}>
+      onNext={() => onNext(selectedOption, "details")}>
       <View className="space-y-4">
         <LegendList
+          key={selectedOption}
           data={afterGraduation}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}

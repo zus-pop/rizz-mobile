@@ -1,12 +1,13 @@
+import { deal_breakers } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
-import { deal_breakers } from '../../constants/input';
 
 interface DealBreakerScreenProps {
-  onNext: (selections: string[]) => void;
+  onNext: (selections: string[], type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -40,8 +41,9 @@ export default function DealBreakerScreen({
       totalSteps={totalSteps}
       disabledNext={selectedOptions.length === 0}
       onBack={onBack}
-      onNext={() => onNext(selectedOptions)}>
+      onNext={() => onNext(selectedOptions, 'details')}>
       <LegendList
+        key={selectedOptions.length}
         data={deal_breakers}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}

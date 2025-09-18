@@ -1,12 +1,13 @@
+import { campusLife } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { campusLife } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 
 interface CampusLifeScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -27,8 +28,9 @@ export default function CampusLifeScreen({
       totalSteps={totalSteps}
       onBack={onBack}
       disabledNext={!selectedOption}
-      onNext={() => onNext(selectedOption)}>
+      onNext={() => onNext(selectedOption, 'details')}>
       <LegendList
+        key={selectedOption}
         data={campusLife}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}

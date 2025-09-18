@@ -1,19 +1,21 @@
-import { Stack } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
-import { usePagerView } from 'react-native-pager-view';
 import {
+  AfterGraduationScreen,
   CampusLifeScreen,
   DealBreakerScreen,
   IAmScreen,
   InterestedInScreen,
   LookingForScreen,
   PassionsScreen,
+  PreferringScreen,
   StudyStyleScreen,
   WeekendHabitScreen,
-} from '../components/questionnaire';
-import AfterGraduationScreen from '../components/questionnaire/AfterGraduationScreen';
-import PreferringScreen from '../components/questionnaire/PreferringScreen';
+} from '@/components/questionnaire';
+import { router, Stack } from 'expo-router';
+import React from 'react';
+import { View } from 'react-native';
+import { usePagerView } from 'react-native-pager-view';
+import { QuestionType } from '../types/profile';
+import { UploadImageScreen } from '../components/profile';
 
 const Questionnaire = () => {
   const { AnimatedPagerView, ref } = usePagerView();
@@ -24,7 +26,8 @@ const Questionnaire = () => {
       currentStep: number;
       totalSteps: number;
       onBack: () => void;
-      onNext: (option: string | string[]) => void;
+      onSkip?: () => void;
+      onNext: (option: string | string[], type: QuestionType) => void;
     }>;
   }[] = [
     {
@@ -84,10 +87,14 @@ const Questionnaire = () => {
                     ref.current?.setPage(index - 1);
                   }
                 }}
-                onNext={(option) => {
-                  console.log('Selected option:', option);
+                onNext={(option, type) => {
                   if (index < questionnaireData.length - 1) {
+                    console.log('Selected option:', option);
+                    console.log('Type: ', type);
                     ref.current?.setPage(index + 1);
+                  } else {
+                    console.log('end');
+                    router.push('/profile-details');
                   }
                 }}
               />

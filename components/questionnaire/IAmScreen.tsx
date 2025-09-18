@@ -1,11 +1,12 @@
+import { iAm } from '@/constants/input';
+import { QuestionType } from '@/types/profile';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { iAm } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 interface IAmScreenProps {
-  onNext: (selection: string) => void;
+  onNext: (selection: string, type: QuestionType) => void;
   onBack: () => void;
   currentStep: number;
   totalSteps: number;
@@ -18,10 +19,11 @@ export default function IAmScreen({ onNext, onBack, currentStep, totalSteps }: I
     <QuestionnaireLayout
       title="I am a"
       disabledNext={!selectedGender}
+      key={selectedGender}
       currentStep={currentStep}
       totalSteps={totalSteps}
       onBack={onBack}
-      onNext={() => onNext(selectedGender)}>
+      onNext={() => onNext(selectedGender, 'details')}>
       <View className="space-y-4">
         <LegendList
           data={iAm}

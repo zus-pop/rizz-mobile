@@ -1,5 +1,6 @@
 import { Text } from '@/components/ui/text';
 import { Profile } from '@/types/profile';
+import FastImage from '@d11/react-native-fast-image';
 import { Image, StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Animated, {
@@ -58,7 +59,11 @@ export default function BackCard({
           }}
           renderItem={({ item }) => (
             <View style={backCardStyles.imageContainer}>
-              <Image source={{ uri: item }} style={backCardStyles.image} resizeMode="cover" />
+              <FastImage
+                source={{ uri: item }}
+                style={backCardStyles.image}
+                resizeMode={FastImage.resizeMode.cover}
+              />
               <View style={backCardStyles.overlay} />
             </View>
           )}

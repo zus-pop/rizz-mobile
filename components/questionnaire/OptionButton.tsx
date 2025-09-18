@@ -1,6 +1,7 @@
 import { TouchableOpacity } from 'react-native';
 import { Path, Svg } from 'react-native-svg';
 import { Text } from '../ui/text';
+import { isEdge } from '@shopify/react-native-skia';
 
 interface OptionButtonProps {
   text: string;
@@ -39,11 +40,10 @@ export default function OptionButton({
       />
     </Svg>
   );
-
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`h-[58px] w-full rounded-2xl border ${
+      className={`h-[58px] w-full rounded-2xl  border ${
         isSelected
           ? 'border-[#E8E6EA] bg-[#FA5EFF]'
           : showArrowIcon

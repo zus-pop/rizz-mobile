@@ -1,17 +1,24 @@
-import { useProfileStore } from '@/stores/profileStore';
 import RangeSlider from '@/components/RangeSlider';
 import SingleSlider from '@/components/SingleSlider';
 import {
+  afterGraduation,
+  campusLife,
+  deal_breakers,
   interests,
   lookingForOptions,
-  zodiacOptions,
-  universityOptions,
   loveLanguageOptions,
+  preferring,
+  studyStyle,
+  universityOptions,
+  weekendHabit,
+  zodiacOptions,
 } from '@/constants/input';
 import { useFilterStore } from '@/store/filterStore';
+import { useProfileStore } from '@/stores/profileStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,15 +28,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSettingsStore } from '@/stores/settingsStore';
-import {
-  afterGraduation,
-  campusLife,
-  deal_breakers,
-  preferring,
-  studyStyle,
-  weekendHabit,
-} from '../constants/input';
 
 export default function SettingsScreen() {
   const router = useRouter();

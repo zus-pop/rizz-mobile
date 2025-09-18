@@ -167,7 +167,7 @@ export default function Discover() {
                 overshootClamping: false,
               }}
               // Enable velocity-based swiping - lower threshold for faster response
-              swipeVelocityThreshold={1200}
+              swipeVelocityThreshold={3000}
               // Improve swipe back animation - more responsive
               swipeBackXSpringConfig={{
                 stiffness: 200,

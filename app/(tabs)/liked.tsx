@@ -34,10 +34,24 @@ export default function Liked() {
       age: 27,
       images: ['https://picsum.photos/1080/1080'],
     },
+    {
+      id: '5',
+      firstName: 'Olivia',
+      lastName: 'Martinez',
+      age: 26,
+      images: ['https://picsum.photos/1200/1200'],
+    },
+    {
+      id: '6',
+      firstName: 'Sophia',
+      lastName: 'Garcia',
+      age: 29,
+      images: ['https://picsum.photos/1000/1000'],
+    },
   ]);
   return (
-    <View style={{ flex: 1, backgroundColor: '#efebfc' }}>
-      <View className="mt-10 flex-1" style={{ margin: 20 }}>
+    <View style={{ flex: 1, backgroundColor: '#efebfc', margin: 10 }}>
+      <View className="mb-2 flex-1" style={{ margin: 20, paddingBottom: 60 }}>
         <View className="gap-2">
           <Heading size="3xl" className="text-black">
             Liked
@@ -47,7 +61,7 @@ export default function Liked() {
           </Text>
         </View>
 
-        <View className="mt-6 flex-1">
+        <View className="flex-1 bg-transparent">
           <LegendList
             data={likedUsers}
             keyExtractor={(item) => item.id}

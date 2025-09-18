@@ -1,6 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Svg, Path, Circle } from 'react-native-svg';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { Circle, Path, Svg } from 'react-native-svg';
 
 interface RecordingScreenProps {
   onStopRecording: () => void;
