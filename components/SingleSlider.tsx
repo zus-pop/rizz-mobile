@@ -101,15 +101,15 @@ export default function SingleSlider({ min, max, value, onValueChange }: SingleS
   return (
     <View className="rounded-lg bg-white p-4 shadow-sm">
       <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-gray-600">{min} km</Text>
-        <Text className="text-gray-600">{max} km</Text>
+        <Text className="text-lg text-gray-600">{min} km</Text>
+        <Text className="text-lg text-gray-600">{max} km</Text>
       </View>
 
       {/* Current value indicator */}
       <View style={{ alignSelf: 'center', marginBottom: 10 }}>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: '600',
             color: ACCENT_COLOR,
             opacity: isDragging ? 1 : 0.7,

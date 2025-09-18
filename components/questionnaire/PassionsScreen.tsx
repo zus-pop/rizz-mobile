@@ -1,9 +1,16 @@
-import { FontAwesome, FontAwesome5, FontAwesome6, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  FontAwesome,
+  FontAwesome5,
+  FontAwesome6,
+  Ionicons,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import InterestChip from './InterestChip';
 import QuestionnaireLayout from './QuestionnaireLayout';
+import { interests } from '../../constants/input';
 
 interface PassionsScreenProps {
   onNext: (selections: string[]) => void;
@@ -19,79 +26,6 @@ export default function PassionsScreen({
   totalSteps,
 }: PassionsScreenProps) {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-
-const interests = [
-    { 
-      id: 'photography', 
-      name: 'Photography', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <Ionicons name="camera" size={size} color={color} />
-    },
-    { 
-      id: 'shopping', 
-      name: 'Shopping', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome name="shopping-bag" size={size} color={color} />
-    },
-    { 
-      id: 'karaoke', 
-      name: 'Karaoke', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome size={size} name="microphone" color={color} />
-    },
-    { 
-      id: 'yoga', 
-      name: 'Yoga', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <MaterialCommunityIcons name="yoga" size={size} color={color} />
-    },
-    { 
-      id: 'cooking', 
-      name: 'Cooking', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <MaterialCommunityIcons name="food" size={size} color={color} />
-    },
-    { 
-      id: 'tennis', 
-      name: 'Tennis', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <MaterialCommunityIcons name="table-tennis" size={size} color={color} />
-    },
-    { 
-      id: 'run', 
-      name: 'Run', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <MaterialCommunityIcons name="run-fast" size={size} color={color} />
-    },
-    { 
-      id: 'swimming', 
-      name: 'Swimming', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <MaterialCommunityIcons name="swim" size={size} color={color} />
-    },
-    { 
-      id: 'art', 
-      name: 'Art', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <Ionicons name="color-palette" size={size} color={color} />
-    },
-    { 
-      id: 'traveling', 
-      name: 'Traveling', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome name="plane" size={size} color={color} />
-    },
-    { 
-      id: 'extreme', 
-      name: 'Extreme', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome6 name="parachute-box" size={size} color={color} />
-    },
-    { 
-      id: 'music', 
-      name: 'Music', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome name="music" size={size} color={color} />
-    },
-    { 
-      id: 'drink', 
-      name: 'Drink', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome5 name="cocktail" size={size} color={color} />
-    },
-    { 
-      id: 'video-games', 
-      name: 'Video games', 
-      icon: ({ color, size = 20 }: { color: string; size?: number }) => <FontAwesome name="gamepad" size={size} color={color} />
-    },
-];
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests((prev) => {

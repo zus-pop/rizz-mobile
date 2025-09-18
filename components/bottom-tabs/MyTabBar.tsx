@@ -1,3 +1,4 @@
+import { FontAwesome } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useMemo } from 'react';
@@ -88,6 +89,8 @@ const MyTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation 
         return <Feather name="heart" size={ICON_SIZE} color={color} />;
       case 'chat':
         return <Feather name="message-circle" size={ICON_SIZE} color={color} />;
+      case 'profile':
+        return <FontAwesome name="user-o" size={ICON_SIZE} color={color} />;
       default:
         return <Feather name="home" size={ICON_SIZE} color={color} />;
     }

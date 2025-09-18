@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import QuestionnaireLayout from './QuestionnaireLayout';
-import OptionButton from './OptionButton';
 import { LegendList } from '@legendapp/list';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { iAm } from '../../constants/input';
+import OptionButton from './OptionButton';
+import QuestionnaireLayout from './QuestionnaireLayout';
 interface IAmScreenProps {
   onNext: (selection: string) => void;
   onBack: () => void;
@@ -12,11 +13,6 @@ interface IAmScreenProps {
 
 export default function IAmScreen({ onNext, onBack, currentStep, totalSteps }: IAmScreenProps) {
   const [selectedGender, setSelectedGender] = useState<string>('');
-  const options = [
-    { id: 'Woman', text: 'Woman', value: 'Woman', showCheckIcon: true },
-    { id: 'Man', text: 'Man', value: 'Man', showCheckIcon: true },
-    { id: 'Other', text: 'Choose another', value: 'Other', showArrowIcon: true },
-  ];
 
   return (
     <QuestionnaireLayout
@@ -28,7 +24,7 @@ export default function IAmScreen({ onNext, onBack, currentStep, totalSteps }: I
       onNext={() => onNext(selectedGender)}>
       <View className="space-y-4">
         <LegendList
-          data={options}
+          data={iAm}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <OptionButton
@@ -36,7 +32,6 @@ export default function IAmScreen({ onNext, onBack, currentStep, totalSteps }: I
               isSelected={selectedGender === item.value}
               onPress={() => setSelectedGender(item.value)}
               showCheckIcon={item.showCheckIcon}
-              showArrowIcon={item.showArrowIcon}
             />
           )}
           ItemSeparatorComponent={() => <View className="h-2" />}

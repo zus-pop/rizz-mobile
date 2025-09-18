@@ -1,5 +1,6 @@
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
+import { toGender } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 
@@ -17,11 +18,7 @@ export default function InterestedInScreen({
   totalSteps,
 }: InterestedInScreenProps) {
   const [selectedGender, setSelectedGender] = useState<string>('');
-  const genderOptions = [
-    { id: 'Woman', text: 'Woman', value: 'Woman', showCheckIcon: true },
-    { id: 'Man', text: 'Man', value: 'Man', showCheckIcon: true },
-    { id: 'Other', text: 'Choose another', value: 'Other', showArrowIcon: true },
-  ];
+
   return (
     <QuestionnaireLayout
       title="Which gender do you interested in?"
@@ -32,7 +29,7 @@ export default function InterestedInScreen({
       onBack={onBack}
       onNext={() => onNext(selectedGender)}>
       <LegendList
-        data={genderOptions}
+        data={toGender}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <OptionButton

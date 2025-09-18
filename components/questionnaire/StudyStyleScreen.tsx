@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 import { LegendList } from '@legendapp/list';
+import { studyStyle } from '../../constants/input';
 
 interface StudyStyleScreenProps {
   onNext: (selection: string) => void;
@@ -19,13 +20,6 @@ export default function StudyStyleScreen({
 }: StudyStyleScreenProps) {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
-  const options = [
-    { id: 'library-warrior', name: 'Library warrior' },
-    { id: 'coffee-shop-studier', name: 'Coffee shop studier' },
-    { id: 'dorm-room-hermit', name: 'Dorm room hermit' },
-    { id: 'study-group-leader', name: 'Study group leader' },
-  ];
-
   return (
     <QuestionnaireLayout
       title="Your study style"
@@ -36,7 +30,7 @@ export default function StudyStyleScreen({
       onNext={() => onNext(selectedOption)}>
       <View className="space-y-4">
         <LegendList
-          data={options}
+          data={studyStyle}
           ItemSeparatorComponent={() => <View className="h-4" />}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (

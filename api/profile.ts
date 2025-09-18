@@ -684,10 +684,10 @@ export function fetchProfiles(
 
   // Add audio URLs to some profiles
   const paginatedProfiles = filteredProfiles.slice(start, end).map((profile, index) => {
-    const audioIndex = (start + index) % sampleAudioUrls.length;
+    // const audioIndex = (start + index) % sampleAudioUrls.length;
     return {
       ...profile,
-      audioUrl: sampleAudioUrls[audioIndex],
+      //   audioUrl: sampleAudioUrls[audioIndex],
     };
   });
 

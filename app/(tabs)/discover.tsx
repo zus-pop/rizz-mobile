@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Swiper, SwiperCardRefType } from 'rn-swiper-list';
+
 const ICON_SIZE = 24;
 
 export default function Discover() {
@@ -225,7 +226,7 @@ export default function Discover() {
             />
           ) : (
             <Animated.View entering={FadeIn.duration(600)} style={styles.emptyStateContainer}>
-              <AntDesign name="search1" size={64} color="#8b5cf6" style={styles.emptyStateIcon} />
+              <AntDesign name="search1" size={64} color="#fa5eff" style={styles.emptyStateIcon} />
               <Text style={styles.emptyStateTitle}>No profiles found</Text>
               <Text style={styles.emptyStateText}>
                 Try adjusting your filters or check back later for new matches
@@ -545,11 +546,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   refreshButton: {
-    backgroundColor: '#8b5cf6',
+    backgroundColor: '#fa5eff',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 10,
-    shadowColor: '#8b5cf6',
+    shadowColor: '#fa5eff',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,

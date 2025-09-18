@@ -59,6 +59,17 @@ export default function RootLayout() {
                       headerTitleStyle: { fontWeight: '600' },
                     }}
                   />
+                  <Stack.Screen
+                    name="settings"
+                    options={{
+                      headerShown: true,
+                      headerTitle: 'Settings',
+                      presentation: 'modal',
+                      headerTintColor: '#fa5eff',
+                      headerShadowVisible: false,
+                      headerTitleStyle: { fontWeight: '600', fontSize: 30 },
+                    }}
+                  />
                 </Stack>
                 <Toaster swipeToDismissDirection="up" />
               </BottomSheetModalProvider>

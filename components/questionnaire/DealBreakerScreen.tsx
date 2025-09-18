@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
+import { deal_breakers } from '../../constants/input';
 
 interface DealBreakerScreenProps {
   onNext: (selections: string[]) => void;
@@ -18,15 +19,6 @@ export default function DealBreakerScreen({
   totalSteps,
 }: DealBreakerScreenProps) {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-
-  const options = [
-    { id: 'smoking', name: 'Smoking' },
-    { id: 'different-political-views', name: 'Different political views' },
-    { id: 'no-ambition', name: 'No ambition' },
-    { id: 'heavy-drinking', name: 'Heavy drinking' },
-    { id: 'poor-hygiene', name: 'Poor hygiene' },
-    { id: 'dishonesty', name: 'Dishonesty' },
-  ];
 
   const toggleOption = (option: string) => {
     setSelectedOptions((prev) => {
@@ -50,7 +42,7 @@ export default function DealBreakerScreen({
       onBack={onBack}
       onNext={() => onNext(selectedOptions)}>
       <LegendList
-        data={options}
+        data={deal_breakers}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-2" />}

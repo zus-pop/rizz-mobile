@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import QuestionnaireLayout from './QuestionnaireLayout';
 import OptionButton from './OptionButton';
 import { LegendList } from '@legendapp/list';
+import { weekendHabit } from '../../constants/input';
 
 interface WeekendHabitScreenProps {
   onNext: (selection: string) => void;
@@ -19,13 +20,6 @@ export default function WeekendHabitScreen({
 }: WeekendHabitScreenProps) {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
-  const options = [
-    { id: 'netflix-and-chill', name: 'Netflix and chill' },
-    { id: 'party-hard', name: 'Party hard' },
-    { id: 'explore-the-city', name: 'Explore the city' },
-    { id: 'catch-up-on-sleep', name: 'Catch up on the sleep' },
-  ];
-
   return (
     <QuestionnaireLayout
       title="On weekends, I ..."
@@ -36,7 +30,7 @@ export default function WeekendHabitScreen({
       onNext={() => onNext(selectedOption)}>
       <View className="space-y-4">
         <LegendList
-          data={options}
+          data={weekendHabit}
           keyExtractor={(item) => item.id}
           ItemSeparatorComponent={() => <View className="h-4" />}
           renderItem={({ item }) => (

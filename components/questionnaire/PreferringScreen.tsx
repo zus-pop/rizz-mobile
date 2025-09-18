@@ -1,6 +1,7 @@
 import { LegendList } from '@legendapp/list';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { preferring } from '../../constants/input';
 import OptionButton from './OptionButton';
 import QuestionnaireLayout from './QuestionnaireLayout';
 
@@ -19,13 +20,6 @@ export default function PreferringScreen({
 }: PreferringScreenProps) {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
-  const options = [
-    { id: 'text-throughout-day', name: 'Text throughout the day' },
-    { id: 'long-phone-calls', name: 'Long phone calls' },
-    { id: 'video-chats', name: 'Video chats' },
-    { id: 'in-person-hangouts', name: 'In-person hangouts' },
-  ];
-
   return (
     <QuestionnaireLayout
       title="I'm preferring"
@@ -35,7 +29,7 @@ export default function PreferringScreen({
       onBack={onBack}
       onNext={() => onNext(selectedOption)}>
       <LegendList
-        data={options}
+        data={preferring}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <View className="h-2" />}

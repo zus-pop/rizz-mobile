@@ -124,8 +124,8 @@ export default function RangeSlider({ min, max, values, onValuesChange }: RangeS
   return (
     <View className="rounded-lg bg-white p-4 shadow-sm">
       <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-gray-600">{min}</Text>
-        <Text className="text-gray-600">{max}</Text>
+        <Text className="text-lg text-gray-600">{min}</Text>
+        <Text className="text-lg text-gray-600">{max}</Text>
       </View>
 
       {/* Current values indicator */}
@@ -138,7 +138,7 @@ export default function RangeSlider({ min, max, values, onValuesChange }: RangeS
         }}>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: '600',
             color: ACCENT_COLOR,
             opacity: isDragging ? 1 : 0.7,

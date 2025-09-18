@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View } from 'react-native';
-import QuestionnaireLayout from './QuestionnaireLayout';
-import OptionButton from './OptionButton';
 import { LegendList } from '@legendapp/list';
+import { useState } from 'react';
+import { View } from 'react-native';
+import { afterGraduation } from '../../constants/input';
+import OptionButton from './OptionButton';
+import QuestionnaireLayout from './QuestionnaireLayout';
 
 interface AfterGraduationScreenProps {
   onNext: (selection: string) => void;
@@ -19,14 +20,6 @@ export default function AfterGraduationScreen({
 }: AfterGraduationScreenProps) {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
-  const options = [
-    { id: 'grad-school-bound', slug: 'grad-school-bound', name: 'Grad school bound' },
-    { id: 'career-focused', slug: 'career-focused', name: 'Career focused' },
-    { id: 'travel-the-world', slug: 'travel-the-world', name: 'Travel the world' },
-    { id: 'start-a-business', slug: 'start-a-business', name: 'Start a business' },
-    { id: 'still-figuring-it-out', slug: 'still-figuring-it-out', name: 'Still figuring it out' },
-  ];
-
   return (
     <QuestionnaireLayout
       title="After graduation"
@@ -37,7 +30,7 @@ export default function AfterGraduationScreen({
       onNext={() => onNext(selectedOption)}>
       <View className="space-y-4">
         <LegendList
-          data={options}
+          data={afterGraduation}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View className="h-2" />}

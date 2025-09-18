@@ -69,6 +69,7 @@ export default function FrontCard(props: FrontCardProps) {
   const handleClose = () => {
     pause();
     setAudioModalVisible(false);
+    setAudioSource(null);
   };
 
   return (
